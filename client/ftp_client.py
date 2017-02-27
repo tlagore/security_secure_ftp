@@ -12,13 +12,19 @@ from message import Message, MessageType
 class FTPClient:
     """Chat server class to handle chat server interactions"""
 
-    def __init__(self, host, port):
+    def __init__(self, host, port, command, filename, cipher, key):
         """constructor for chat client"""
-        print("{0} {1}".format(host, port))
+        print("!! Client starting. Arguments: ".format(host, port))
+        print("!! \thost: {0}".format(host))
+        print("!! \tport: {0}".format(port))
+        print("!! \tcommand: {0}".format(command))
+        print("!! \tfilename: {0}".format(filename))
+        print("!! \tcipher: {0}".format(cipher))
+        print("!! \tkey: {0}".format(key))
 
         self._user = None
         self._group = None
-
+        '''
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._socket.connect((host, port))
 
@@ -30,6 +36,7 @@ class FTPClient:
 
         self._listenServer.join()
         self._listenClient.join()
+        '''
 
     def listen_server(self):
         """listens for interaction from the server"""
