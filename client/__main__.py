@@ -5,26 +5,36 @@ from ftp_client import FTPClient, IPFormatError
 
 def main(args=None):
     """Entry point for chat_client"""
-    ipFormat = r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$"
+
     # request this from user at a later point
-    if len(sys.argv) != 3:
+    if len(sys.argv) < 5:
         print("Invalid usage. Usage:")
-        print("{0} [server_address] [port]".format(sys.argv[0]))
+        print("{0} {write | read} filename host:port { aes256 | aes128 | none } [key]".format(str(sys.argv[0]))) 
+    elif len(sys.argv) > 6:
+        print("Invalid usage. Usage:")
+        print("{0} {write | read} filename host:port { aes256 | aes128 | none } [key]".format(str(sys.argv[0]))) 
     else:
         try:
-            host = str(sys.argv[1])
-            if not re.match(ipFormat, host):
-                raise IPFormat("Invalid IP format")
+            command = str(sys.argv[1])
+            filename = str(sys.argv[2])
+            host_port = str(sys.argv[3])
+
+            cipher = str(sys.argv[4])
             
-            port = int(sys.argv[2])
-            client = FTPClient(host, port)
+            if len(sys.argv) == 6:
+                key = sys.argv[5]
+                
+            if not re.match(ipFormat, host_port):
+                raise IPFormatError("Invalid IP format. Must be of the form host:port")
+            
+            #port = int(sys.argv[2])
+            #client = FTPClient(host, port)
         except ValueError:
             print("{0} is not a valid port number.".format(sys.argv[2]))
-        except IPFormat:
-            print("{0} is not a valid ip number.".format(sys.argv[1]))
+        except IPFormatError:
+            print("{0} is not a valid ip number.".format(sys.argv[3]))
         finally:
             print("Exitting...")
-
 
 if __name__ == "__main__":
     main()
