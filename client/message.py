@@ -5,7 +5,7 @@ class MessageError(Exception):
         self._message = message
 
     def __str__(self):
-        return repr(self._message):
+        return repr(self._message)
 
 class MessageType(Enum):
     handshake = 0

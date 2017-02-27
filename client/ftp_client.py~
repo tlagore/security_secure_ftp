@@ -7,9 +7,9 @@ import sys
 import threading
 import time
 
-from message import Message
+from message import Message, MessageType
 
-class ChatClient:
+class FTPClient:
     """Chat server class to handle chat server interactions"""
 
     def __init__(self, host, port):
@@ -58,9 +58,14 @@ class ChatClient:
         
         checks with the server to ensure name is available
         """
+
+        # this function will not be used, but can be used to see how a client/server interaction would go
+        
+        '''
         user = input("Please enter a user name (\"cancel\" to cancel): ")
         response = self.request_user(user)
 
+        #get user name, send name to server for verification (that it isnt taken)
         while response._payload != True and user != "cancel":
             print("User name is taken.")
             user = input("Please enter a user name (\"cancel\" to cancel): ")
@@ -82,46 +87,17 @@ class ChatClient:
                 Menu.three_dots("Successfully signed up")
         else:
             Menu.three_dots("Cancelled signup process")
-            
+         '''
             
     def request_user(self, user):
+        # won't be used, but called in sign up - delete after reviewing
+        '''
         message = Message(mType=Message.MessageType.signup, mPayload=user)
         self._socket.send(pickle.dumps(message))
         response = pickle.loads(self._socket.recv(2048))
         return response
+        '''
         
-    def login(self):
-        message = self.get_creds()
-        self._socket.send(pickle.dumps(message))
-        response = pickle.loads(self._socket.recv(2048))
-        
-        while response._payload != True:
-            print("Invalid user or password.")
-            message = self.get_creds()
-
-            self._socket.send(pickle.dumps(message))
-            response = pickle.loads(self._socket.recv(2048))
-            
-            if message._target == "cancel":
-                break
-
-        if message._target != "cancel":
-            Menu.three_dots("Login successful")
-            self._user = message._target
-            self.user_loop()
-            
-        else:
-            Menu.three_dots("Login cancelled")
-
-    def get_creds(self):
-        user = input("User name (\"cancel\" to abort): ")
-        psw = getpass()
-        message = Message(mType=Message.MessageType.login, target=user, mPayload=psw)
-        return message
-        
-    def close(self):
-        print("exit!")
-
     def three_dots(message):
         """ prints 3 dots with a .5 second delay between each dot """
         print(message, end='')
@@ -155,7 +131,7 @@ class ChatClient:
             self.three_dots("Exitting")
             
 
-class IPFormat(Exception):
+class IPFormatError(Exception):
     """custom exception to indicate an IP format error"""
     
     def __init__(self, value):

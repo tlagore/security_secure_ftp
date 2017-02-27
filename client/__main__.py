@@ -1,6 +1,6 @@
 import sys
 import re
-from chat_client import ChatClient, IPFormat
+from ftp_client import FTPClient, IPFormatError
 
 
 def main(args=None):
@@ -17,7 +17,7 @@ def main(args=None):
                 raise IPFormat("Invalid IP format")
             
             port = int(sys.argv[2])
-            client = ChatClient(host, port)
+            client = FTPClient(host, port)
         except ValueError:
             print("{0} is not a valid port number.".format(sys.argv[2]))
         except IPFormat:

@@ -1,6 +1,6 @@
 import sys
 import numbers
-from chat_server import ChatServer
+from ftp_server import FTPServer
 
 def main(args=None):
     """Entry point for chat_server"""
@@ -13,7 +13,7 @@ def main(args=None):
             port = int(sys.argv[1]);
             
             if port > 1024 and port <= 65535:
-                server = ChatServer(port)
+                server = FTPServer(port)
                 server.start_server()
             else:
                 print("Please specify a port between 1025 and 65535")
