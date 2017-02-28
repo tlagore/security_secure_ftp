@@ -29,8 +29,8 @@ class FTPClient:
         self._cipher = cipher
         self._key = key
         
-        #self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        #self._socket.connect((host, port))
+        self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._socket.connect((host, port))
 
         self._worker = threading.Thread(target=self.worker)
         self._worker.start()
@@ -39,23 +39,26 @@ class FTPClient:
     def worker(self):
         """ worker thread for ftp_client """
         #response = self.handshake()
+        #get this from the server later
         response = Message(mType=MessageType.confirmation, mPayload=True)
-        '''
+
+        print("{0} {1}".format(response.type, response.payload))
+    
         if response.payload == True:
-            if command == "read":
+            if self._command == "read":
                 self.read()
-            elif command == "write":
+            elif self._command == "write":
                 self.write()
         else:
             print("!! Server denied connection. Received false confirmation after handshake")
-        '''
+    
 
     def handshake(self):
         """ generates an initialization vector for the server waits for confirmation """
         iv = self.gen_nonce()
-        message = Message(mType=handshake, mPayload=iv, mCipher=self._cipher)
+        message = Message(mType=MessageType.handshake, mPayload=iv, mCipher=self._cipher)
         self._socket.send(pickle.dumps(message))
-        response = pickle.loads(decrypt(self._socket.recv(2048)))
+        response = pickle.loads(self.decrypt(self._socket.recv(2048)))
         return response
 
     def read(self):
@@ -75,8 +78,11 @@ class FTPClient:
 
         if response.payload == True:
             with open("test.txt") as fd:
-                for line in fd:
-                    print(line)
+                intxt = fd.read(16)
+                while intxt != "":
+                    self._socket.send(intxt.encode())
+                    print(intxt.encode())
+                    intxt = fd.read(16)
         else:
             print("!! Server rejected write command")
 
