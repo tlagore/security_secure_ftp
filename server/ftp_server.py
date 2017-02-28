@@ -8,6 +8,8 @@ import threading
 import traceback
 import sys
 
+from multiprocessing.connection import Listener
+
 from message import Message, MessageType
 
 class FTPServer:
@@ -59,57 +61,38 @@ class FTPServer:
         #main worker loop, receive message and check contents
         try:
             message = pickle.loads(client.recv(2048))
-            self.msg_type(message.type)
-
-#            self.read_message(message)
-
-            self.ack_client(client, True)
             
+            while message:
+                self.type_switch(message)
+                message = pickle.loads(client.recv(2048))
+
+        except (EOFError) as e:
+            pass
         except:
             print("{0}".format(traceback.format_exception(sys.exc_info())))
             print("Client disconnected")
             
         print("Exitting worker")
 
-    def msg_type(x):
+    def type_switch(msg):
+        print ("Message Details:")
+        print ("type: {0}".format(msg.type))
+        print ("payload: {0}".format(str(msg.payload)))
+        print ("cipher: {0}".format(msg.cipher))
         return {
-            'handshake': self.shakehand(),
+            'handshake': self.shakehand(msg),
             'get_file': sys.exit(0),
             'send_file': sys.exit(0),
             'confirmation': sys.exit(0),
-        }[x]
+        }[msg.type]
 
-    def shakehand(self):
-        print ("payload: {0}".format(str(message.payload)))
-        print ("cipher: {0}".format(message.cipher))
-                    
+    def shakehand(self, message):
+        self.read_message(message)
+        self.ack_client(client, True)
+        
     def read_message(self, message):
         """Read message from client"""
-
-        print ("message : {0}".format(args))
-        if message.type:
-            '''use encryption'''
-            print ("Encrypting with {0}".format(args[2]))
-        else:
-            if len(args) == 2:
-                '''no encryption'''
-                print ("Not excrypting communications")
-            else:
-                '''too many or too few args'''
-                print("Invalid number of args")
-                return
-
-        if args[0] == 'read':
-            '''send file to client'''
-            '''check if file exists'''
-            print ("Server sends file {0}".format(args[1]))
-        else:
-            if args[0] == 'write':
-                '''recv or update file from client'''
-                print ("Server recieves file {0}".format(args[1]))
-            else:
-                print ("args[0] was an invalid command")
-                return
+        return
         
                 
     def ack_client(self, client, ack):
@@ -119,7 +102,6 @@ class FTPServer:
 
         ack is expected to be a boolean value (True/False)
         """
-        
         response = Message(mType=MessageType.confirmation, mPayload=ack)
         client.send(pickle.dumps(response))            
 
