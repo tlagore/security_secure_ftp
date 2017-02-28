@@ -59,22 +59,11 @@ class FTPServer:
         #main worker loop, receive message and check contents
         try:
             message = pickle.loads(client.recv(2048))
-            '''
-            while message:
-                if message._type == MessageType.handshake:
-                    print ("Handshake!")
-                if message._type == MessageType.recv_file:
-                    print ("Recv File!")
-                if message._type == MessageType.send_file:
-                    print ("Send File!")
-                if message._type == MessageType.confirm:
-                    print ("Confirm!")
-            '''
-            print ("payload: {0}".format(message.payload))
-            print ("cipher: {0}".format(message.cipher))
-            
+            self.msg_type(message.type)
+
+#            self.read_message(message)
+
             self.ack_client(client, True)
-            self.read_message(message.decode())
             
         except:
             print("{0}".format(traceback.format_exception(sys.exc_info())))
@@ -82,12 +71,23 @@ class FTPServer:
             
         print("Exitting worker")
 
-    def read_message(self, *args):
+    def msg_type(x):
+        return {
+            'handshake': self.shakehand(),
+            'get_file': sys.exit(0),
+            'send_file': sys.exit(0),
+            'confirmation': sys.exit(0),
+        }[x]
+
+    def shakehand(self):
+        print ("payload: {0}".format(str(message.payload)))
+        print ("cipher: {0}".format(message.cipher))
+                    
+    def read_message(self, message):
         """Read message from client"""
-        '''message should have:
-           command filename cipher'''
-        print ("args are : {0}".format(args))
-        if len(args) == 3:
+
+        print ("message : {0}".format(args))
+        if message.type:
             '''use encryption'''
             print ("Encrypting with {0}".format(args[2]))
         else:
@@ -120,7 +120,7 @@ class FTPServer:
         ack is expected to be a boolean value (True/False)
         """
         
-        response = Message(mType=MessageType.confirm, mPayload=ack)
+        response = Message(mType=MessageType.confirmation, mPayload=ack)
         client.send(pickle.dumps(response))            
 
     def __del__(self):
