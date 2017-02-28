@@ -12,37 +12,88 @@ from message import Message, MessageType
 class FTPClient:
     """Chat server class to handle chat server interactions"""
 
-    def __init__(self, host, port):
+    def __init__(self, host, port, command, filename, cipher, key):
         """constructor for chat client"""
-        print("{0} {1}".format(host, port))
+        print("!! Client starting. Arguments: ".format(host, port))
+        print("!! \thost: {0}".format(host))
+        print("!! \tport: {0}".format(port))
+        print("!! \tcommand: {0}".format(command))
+        print("!! \tfilename: {0}".format(filename))
+        print("!! \tcipher: {0}".format(cipher))
+        print("!! \tkey: {0}".format(key))
 
-        self._user = None
-        self._group = None
-
-        self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._socket.connect((host, port))
-
-        self._listenServer = threading.Thread(target=self.listen_server)
-        self._listenClient = threading.Thread(target=self.listen_client)
+        self._host = host
+        self._port = port
+        self._command = command
+        self._filename = filename
+        self._cipher = cipher
+        self._key = key
         
-        self._listenServer.start()
-        self._listenClient.start()
+        #self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        #self._socket.connect((host, port))
 
-        self._listenServer.join()
-        self._listenClient.join()
+        self._worker = threading.Thread(target=self.worker)
+        self._worker.start()
+        self._worker.join()
 
-    def listen_server(self):
-        """listens for interaction from the server"""
-        #haven't had a use for this yet because usually the interaction is:
-        #client sends a message -> server responds. Not much need to listen unless we've sent something
-                    
-    def listen_client(self):
-        """listen for client input to pass to the server"""
-        #do client stuff
-        #ie: self._socket.send(pickle.dumps(object))
-        #response = pickle.loads(self._socket.recv(2048))
-        #do stuff with response
+    def worker(self):
+        """ worker thread for ftp_client """
+        #response = self.handshake()
+        response = Message(mType=MessageType.confirmation, mPayload=True)
+        '''
+        if response.payload == True:
+            if command == "read":
+                self.read()
+            elif command == "write":
+                self.write()
+        else:
+            print("!! Server denied connection. Received false confirmation after handshake")
+        '''
 
+    def handshake(self):
+        """ generates an initialization vector for the server waits for confirmation """
+        iv = self.gen_nonce()
+        message = Message(mType=handshake, mPayload=iv, mCipher=self._cipher)
+        self._socket.send(pickle.dumps(message))
+        response = pickle.loads(decrypt(self._socket.recv(2048)))
+        return response
+
+    def read(self):
+        """ reads a file from the server"""
+        #message = Message(mType=MessageType.get_file, mPayload=self._filename)
+        print("Read!")
+                          
+    def write(self):
+        """ writes a file to the server """
+        '''
+        message = Message(mType=MessageType.get_file, mPayload=self._filename)
+        message = encrypt(pickle.dumps(message))
+        self._socket.write(message)
+        response = pickle.loads(decrypt(self._socket.recv(2048)))
+        '''
+        response = Message(mType=MessageType.confirmation, mPayload=True)
+
+        if response.payload == True:
+            with open("test.txt") as fd:
+                for line in fd:
+                    print(line)
+        else:
+            print("!! Server rejected write command")
+
+
+    def encrypt(self, data):
+        """ encrypts the passed in data and returns the encrypted data """
+        # TODO: Encrypt the data...
+        return data
+
+    def decrypt(self, data):
+        """ decrypts the passed in data and returns the decrypted data """
+        # TODO: Decrypt the data...
+        return data
+                                
+    def gen_nonce(self):
+        """ generates a nonce to synchronize with the server """
+        return os.urandom(16)                   
                   
     def serialize_message(m_type=None, m_payload=None, m_target=None):
         """ creates a message object and returns the pickled (serialized) version of the object """
@@ -50,8 +101,7 @@ class FTPClient:
         ### Haven't used this yet, but might be useful to create message and serialize in same call ###
         message = Message(mType=m_type, mPayload=m_payload, target=m_target)
         return pickle.dumps(message)
-        
-            
+         
     def sign_up(self):
         """ 
         handles client side interaction of signing in to server
