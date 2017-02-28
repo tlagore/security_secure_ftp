@@ -22,34 +22,32 @@ class FTPClient:
         print("!! \tcipher: {0}".format(cipher))
         print("!! \tkey: {0}".format(key))
 
-        self._user = None
-        self._group = None
-        '''
+        self._host = host
+        self._port = port
+        self._command = command
+        self._filename = filename
+        self._cipher = cipher
+        self._key = key
+        
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._socket.connect((host, port))
 
-        self._listenServer = threading.Thread(target=self.listen_server)
-        self._listenClient = threading.Thread(target=self.listen_client)
-        
-        self._listenServer.start()
-        self._listenClient.start()
+        self._worker = threading.Thread(target=self.worker)
+        self._worker.start()
+        self._worker.join()
 
-        self._listenServer.join()
-        self._listenClient.join()
-        '''
+    def worker(self):
+        """ worker thread for ftp_client """
+        if command == "read":
+            self.read()
+        elif command == "write":
+            self.write()
 
-    def listen_server(self):
-        """listens for interaction from the server"""
-        #haven't had a use for this yet because usually the interaction is:
-        #client sends a message -> server responds. Not much need to listen unless we've sent something
-                    
-    def listen_client(self):
-        """listen for client input to pass to the server"""
-        #do client stuff
-        #ie: self._socket.send(pickle.dumps(object))
-        #response = pickle.loads(self._socket.recv(2048))
-        #do stuff with response
+    def read(self):
+        """ reads a file from the server"""
 
+    def write(self):
+        """ writes a file to the server """
                   
     def serialize_message(m_type=None, m_payload=None, m_target=None):
         """ creates a message object and returns the pickled (serialized) version of the object """
