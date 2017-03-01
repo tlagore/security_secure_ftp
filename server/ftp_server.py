@@ -81,25 +81,43 @@ class FTPServer:
             
         print("Exitting worker")
 
-    def recv_message(self, client):
-        print("in recv message")
-        messageBytes = bytes([])
-        chunk = client.recv(16)
-        print("got first chunk")
-        #message = Message(mType=confirmation, mPayload=True) 
-        while chunk != self._iv and chunk != b'':
-            #client.send(pickle.dumps(
-            print(chunk)
-            messageBytes = messageBytes + chunk
-            chunk = client.recv(16)
+        
+    def send_message(self, message, client):
+        messageBytes = pickle.dumps(message)
 
-        print(chunk)
+        client.send(encrypt(str(len(messageBytes)).encode('UTF-8')))
+
+        i = 0        
+        while i < len(messageBytes):
+            msg = messageBytes[i:i+16:]
+            if msg == b'':
+                msg = bytes([0 for x in range(1, 16)])
+            client.send(self.encrypt(msg))
+            i=i+16
+
+        if (i - 16) < len(messageBytes):
+            msg = messageBytes[i-16:len(messageBytes):]
             
-        print("got iv")
-        print(messageBytes)
-        #received = pickle.loads(messageBytes)
-        #print(received.payload)
+            if len(msg) != 16:
+                msg = msg + bytes([0 for x in range(len(msg)+1, 16)])
+            client.send(self.encrypt(msg))
+            
+        
+    def recv_message(self, client):
+        messageBytes = bytes([])
+        chunk = self.decrypt(client.recv(16))
+        messageSize = int(chunk.decode())
+        print("Message size will be {0} bytes".format(int(chunk.decode())))
+        
+        while len(messageBytes) != messageSize:
+            ## REMEMBER TO DECRYPT AFTER 16 BYTES READ HERE ##
+            chunk = client.recv(1)
+            messageBytes += chunk
 
+        message = pickle.loads(messageBytes)
+        print(message.payload)
+        return message
+    
     def type_switch(self, msg, client):
         print ("Message Details:")
         print ("type: {0}".format(msg.type))
@@ -126,7 +144,6 @@ class FTPServer:
             client.send(pickle.dumps(response))
             message = pickle.loads(client.recv(2048))
 
-
         client.send(pickle.dumps(response))
 
         
@@ -142,7 +159,14 @@ class FTPServer:
     def read_message(self, message):
         """Read message from client"""
         return
-        
+
+    def encrypt(self, data):
+        """ encrypts data and returns it """
+        return data
+
+    def decrypt(self, data):
+        """ decrypts data and returns it """
+        return data
                 
     def ack_client(self, client, ack):
         """ 

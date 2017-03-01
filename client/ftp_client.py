@@ -30,10 +30,10 @@ class FTPClient:
         self._key = key
         self._iv = self.gen_nonce()
         
-        #self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        #self._socket.connect((host, port))
+        self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._socket.connect((host, port))
 
-        #self.handshake()
+        self.handshake()
 
         message = Message(mType=MessageType.write_file, mPayload="helloworldhello! More things! Yeah! Love stuff.")
         self.send_message(message)
@@ -58,37 +58,43 @@ class FTPClient:
         else:
             print("!! Server denied connection. Received false confirmation after handshake")
 
-
     def send_message(self, message):
+        """ breaks message into 16 byte chunks and sends them decrypted """
         messageBytes = pickle.dumps(message)
-        print(len(messageBytes))
-        i = 0
-        '''
-        while i < sys.getsizeof(messageBytes):
+
+        self._socket.send(self.encrypt(str(len(messageBytes)).encode('UTF-8')))
+
+        i = 0        
+        while i < len(messageBytes):
             msg = messageBytes[i:i+16:]
             if msg == b'':
                 msg = bytes([0 for x in range(1, 16)])
-            self._socket.send(msg)
+            self._socket.send(self.encrypt(msg))
             i=i+16
 
-        if (i - 16) < sys.getsizeof(messageBytes):
-            msg = messageBytes[i-16:sys.getsizeof(messageBytes):]
+        if (i - 16) < len(messageBytes):
+            msg = messageBytes[i-16:len(messageBytes):]
             
             if len(msg) != 16:
                 msg = msg + bytes([0 for x in range(len(msg)+1, 16)])
-            self._socket.send(msg)
+            self._socket.send(self.encrypt(msg))
 
-        self._socket.send(self._iv)
-        '''
-        #self._socket.send(bytes([0 for x in range(1,16)]))
-        #self._socket.send(bytes(self._iv))
+
+    def recv_message(self, client):
+        """ receives a message length then reads in a message and decrypts them """
+        messageBytes = bytes([])
+        chunk = self._socket.recv(16)
+        messageSize = int(chunk.decode())
+        print("got first chunk, size will be {0} bytes".format(int(chunk.decode())))
         
-        time.sleep(5)
+        while len(messageBytes) != messageSize:
+            ## REMEMBER TO DECRYPT THE CHUNK HERE AFTER 16 BYTES READ ##
+            chunk = self._socket.recv(1)
+            messageBytes += chunk
 
-
-
-    def recv_message(self):
-        """ receive a message in 128 bit chunks """
+        message = pickle.loads(messageBytes)
+        print(message.payload)
+        return message
 
     def handshake(self):
         """ generates an initialization vector for the server waits for confirmation """
