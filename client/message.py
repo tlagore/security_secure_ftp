@@ -9,9 +9,11 @@ class MessageError(Exception):
 
 class MessageType(Enum):
     handshake = 0
-    get_file = 1
-    send_file = 2
+    read_file = 1
+    write_file = 2
     confirmation = 3
+    disconnect = 4
+    eof = 5
 
 class Message:
     def __init__(self, mType=None, mPayload=None, mCipher=None):

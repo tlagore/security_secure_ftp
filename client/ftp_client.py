@@ -28,19 +28,26 @@ class FTPClient:
         self._filename = filename
         self._cipher = cipher
         self._key = key
+        self._iv = self.gen_nonce()
         
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._socket.connect((host, port))
 
-        self._worker = threading.Thread(target=self.worker)
-        self._worker.start()
-        self._worker.join()
+        self.handshake()
+
+        message = Message(mType=MessageType.write_file, mPayload="helloworldhello! More things! Yeah! Love stuff.")
+        self.send_message(message)
+
+        
+        #self._worker = threading.Thread(target=self.worker)
+        #self._worker.start()
+        #self._worker.join()
 
     def worker(self):
         """ worker thread for ftp_client """
-        #response = self.handshake()
+        response = self.handshake()
         #get this from the server later
-        response = Message(mType=MessageType.confirmation, mPayload=True)
+        #response = Message(mType=MessageType.confirmation, mPayload=True)
 
         print("{0} {1}".format(response.type, response.payload))
     
@@ -51,14 +58,44 @@ class FTPClient:
                 self.write()
         else:
             print("!! Server denied connection. Received false confirmation after handshake")
-    
+
+
+    def send_message(self, message):
+        messageBytes = pickle.dumps(message)
+        i = 0
+        '''
+        while i < sys.getsizeof(messageBytes):
+            msg = messageBytes[i:i+16:]
+            if msg == b'':
+                msg = bytes([0 for x in range(1, 16)])
+            self._socket.send(msg)
+            i=i+16
+
+        if (i - 16) < sys.getsizeof(messageBytes):
+            msg = messageBytes[i-16:sys.getsizeof(messageBytes):]
+            
+            if len(msg) != 16:
+                msg = msg + bytes([0 for x in range(len(msg)+1, 16)])
+            self._socket.send(msg)
+
+        self._socket.send(self._iv)
+        '''
+        self._socket.send(bytes([0 for x in range(1,16)]))
+        self._socket.send(bytes(self._iv))
+        
+        time.sleep(5)
+
+
+
+    def recv_message(self):
+        """ receive a message in 128 bit chunks """
 
     def handshake(self):
         """ generates an initialization vector for the server waits for confirmation """
-        iv = self.gen_nonce()
-        message = Message(mType=MessageType.handshake, mPayload=iv, mCipher=self._cipher)
+        message = Message(mType=MessageType.handshake, mPayload=self._iv, mCipher=self._cipher)
         self._socket.send(pickle.dumps(message))
         response = pickle.loads(self.decrypt(self._socket.recv(2048)))
+        print(response.payload)
         return response
 
     def read(self):
@@ -74,15 +111,33 @@ class FTPClient:
         self._socket.write(message)
         response = pickle.loads(decrypt(self._socket.recv(2048)))
         '''
-        response = Message(mType=MessageType.confirmation, mPayload=True)
+        print("Write!")
+        message = Message(mType=MessageType.write_file, mPayload=self._filename)
+        self._socket.send(pickle.dumps(message))
+        
+        #response = Message(mType=MessageType.confirmation, mPayload=True)
+        response = pickle.loads(self._socket.recv(2048))
 
+        print("wut")
         if response.payload == True:
             with open("test.txt") as fd:
                 intxt = fd.read(16)
                 while intxt != "":
-                    self._socket.send(intxt.encode())
-                    print(intxt.encode())
+                    message = Message(mType=MessageType.write_file, mPayload=intxt.encode())
+                    self._socket.send(pickle.dumps(message))
+                    response = pickle.loads(self._socket.recv(2048))
+                    if response.payload == False:
+                        break
+
                     intxt = fd.read(16)
+
+            message = Message(mType=MessageType.eof, mPayload=True)
+            self._socket.send(pickle.dumps(message))
+            response = pickle.loads(self._socket.recv(2048))
+            if response.payload == True:
+                print("!! Finished writing {0} to server".format(self._filename))
+            else:
+                print("!! Server indicated an error in writing file")
         else:
             print("!! Server rejected write command")
 

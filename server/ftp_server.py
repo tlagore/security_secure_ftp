@@ -18,6 +18,8 @@ class FTPServer:
     def __init__(self, *args):
         """Constructor"""
         self._port = args[0]
+        self._cipher = None
+        self._iv = None
         if len(args) == 2:
             self._key = args[1]
         self._socket = 0
@@ -61,10 +63,15 @@ class FTPServer:
         #main worker loop, receive message and check contents
         try:
             message = pickle.loads(client.recv(2048))
-            
-            while message:
-                self.type_switch(message)
-                message = pickle.loads(client.recv(2048))
+
+            if message and message.type != MessageType.disconnect:
+                #switch handles message
+                self.type_switch(message, client)
+                self.recv_message(client)
+
+                #message = pickle.loads(client.recv(2048))
+                
+            #message = pickle.loads(client.recv(2048))
 
         except (EOFError) as e:
             pass
@@ -74,21 +81,63 @@ class FTPServer:
             
         print("Exitting worker")
 
-    def type_switch(msg):
+    def recv_message(self, client):
+        print("in recv message")
+        messageBytes = bytes([])
+        chunk = client.recv(16)
+        print("got first chunk")
+        #message = Message(mType=confirmation, mPayload=True) 
+        while chunk != self._iv and chunk != b'':
+            #client.send(pickle.dumps(
+            print(chunk)
+            messageBytes = messageBytes + chunk
+            chunk = client.recv(16)
+
+        print(chunk)
+            
+        print("got iv")
+        print(messageBytes)
+        #received = pickle.loads(messageBytes)
+        #print(received.payload)
+
+    def type_switch(self, msg, client):
         print ("Message Details:")
         print ("type: {0}".format(msg.type))
-        print ("payload: {0}".format(str(msg.payload)))
         print ("cipher: {0}".format(msg.cipher))
-        return {
-            'handshake': self.shakehand(msg),
-            'get_file': sys.exit(0),
-            'send_file': sys.exit(0),
-            'confirmation': sys.exit(0),
-        }[msg.type]
+        print ("payload: {0}".format(str(msg.payload)))
+        if msg.type == MessageType.handshake:
+            self.shakehand(msg, client)
+        elif msg.type == MessageType.write_file:
+            self.client_write(client, msg.payload)
+        elif msg.type == MessageType.send_file:
+            pass
+        elif msg.type == MessageType.confirmation:
+            pass
 
-    def shakehand(self, message):
-        self.read_message(message)
-        self.ack_client(client, True)
+    def client_write(self, client, filename):
+        """ handles a client attempting to write to server """
+        print("filename: {0}".format(filename))
+        response = Message(mType=MessageType.confirmation, mPayload=True)
+        client.send(pickle.dumps(response))
+
+        message = pickle.loads(client.recv(2048))
+        while message.type != MessageType.eof:
+            print(message.payload)
+            client.send(pickle.dumps(response))
+            message = pickle.loads(client.recv(2048))
+
+
+        client.send(pickle.dumps(response))
+
+        
+    def shakehand(self, message, client):
+        """ receives a handshake from the client containing cipher and iv """
+        if message.cipher != "aes256" and message.cipher != "aes128" and message.cipher != "none":
+            self.ack_client(client, False)
+        else:
+            self._cipher = message.cipher
+            self._iv = message.payload
+            self.ack_client(client, True)
         
     def read_message(self, message):
         """Read message from client"""
