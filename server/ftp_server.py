@@ -69,6 +69,7 @@ class FTPServer:
                 self.shakehand(message,client)
                 #switch handles message
                 message = self.recv_message(client)
+                self.send_message(message, client)
                 #self.type_switch(message, client)
                 #self.recv_message(client)
 
@@ -88,7 +89,7 @@ class FTPServer:
     def send_message(self, message, client):
         messageBytes = pickle.dumps(message)
 
-        client.send(encrypt(str(len(messageBytes)).encode('UTF-8')))
+        client.send(self.encrypt(str(len(messageBytes)).encode('UTF-8')))
 
         i = 0        
         while i < len(messageBytes):
@@ -111,11 +112,19 @@ class FTPServer:
         chunk = self.decrypt(client.recv(16))
         messageSize = int(chunk.decode())
         print("Message size will be {0} bytes".format(int(chunk.decode())))
-        
-        while len(messageBytes) != messageSize:
-            ## REMEMBER TO DECRYPT AFTER 16 BYTES READ HERE ##
-            chunk = client.recv(1)
-            
+
+        chunk = bytes([])
+        while len(chunk) + len(messageBytes) != messageSize:
+            chunk += client.recv(1)
+            if len(chunk) == 16:
+                chunk = self.decrypt(chunk)
+                messageBytes += chunk
+                chunk = bytes([])
+
+        ## if we hit an error later with padding, it could be here... might need to unpad before
+        ## decrypting
+        if len(chunk) != 16:
+            chunk = self.decrypt(chunk)
             messageBytes += chunk
 
         message = pickle.loads(messageBytes)

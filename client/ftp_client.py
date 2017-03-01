@@ -38,6 +38,8 @@ class FTPClient:
         message = Message(mType=MessageType.write_file, mPayload="helloworldhello! More things! Yeah! Love stuff.")
         self.send_message(message)
 
+        message = self.recv_message()
+
         #self._worker = threading.Thread(target=self.worker)
         #self._worker.start()
         #self._worker.join()
@@ -79,17 +81,24 @@ class FTPClient:
                 msg = msg + bytes([0 for x in range(len(msg)+1, 16)])
             self._socket.send(self.encrypt(msg))
 
-
-    def recv_message(self, client):
-        """ receives a message length then reads in a message and decrypts them """
+    def recv_message(self):
         messageBytes = bytes([])
-        chunk = self._socket.recv(16)
+        chunk = self.decrypt(self._socket.recv(16))
         messageSize = int(chunk.decode())
-        print("got first chunk, size will be {0} bytes".format(int(chunk.decode())))
-        
-        while len(messageBytes) != messageSize:
-            ## REMEMBER TO DECRYPT THE CHUNK HERE AFTER 16 BYTES READ ##
-            chunk = self._socket.recv(1)
+        print("Message size will be {0} bytes".format(int(chunk.decode())))
+
+        chunk = bytes([])
+        while len(chunk) + len(messageBytes) != messageSize:
+            chunk += self._socket.recv(1)
+            if len(chunk) == 16:
+                chunk = self.decrypt(chunk)
+                messageBytes += chunk
+                chunk = bytes([])
+
+        ## if we hit an error later with padding, it could be here... might need to unpad before
+        ## decrypting
+        if len(chunk) != 16:
+            chunk = self.decrypt(chunk)
             messageBytes += chunk
 
         message = pickle.loads(messageBytes)
