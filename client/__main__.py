@@ -12,7 +12,7 @@ def main(args=None):
         print("{0} {{ write | read }} filename host:port {{ aes256 | aes128 | none }} [key]".format(str(sys.argv[0]))) 
     elif len(sys.argv) > 6:
         print("Invalid usage. Usage:")
-        print("{0} {write | read} filename host:port { aes256 | aes128 | none } [key]".format(str(sys.argv[0]))) 
+        print("{0} {{ write | read }} filename host:port {{ aes256 | aes128 | none }} [key]".format(str(sys.argv[0]))) 
     else:
         try:
             command = str(sys.argv[1])

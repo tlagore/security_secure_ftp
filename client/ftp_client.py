@@ -30,15 +30,14 @@ class FTPClient:
         self._key = key
         self._iv = self.gen_nonce()
         
-        self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._socket.connect((host, port))
+        #self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        #self._socket.connect((host, port))
 
-        self.handshake()
+        #self.handshake()
 
         message = Message(mType=MessageType.write_file, mPayload="helloworldhello! More things! Yeah! Love stuff.")
         self.send_message(message)
 
-        
         #self._worker = threading.Thread(target=self.worker)
         #self._worker.start()
         #self._worker.join()
@@ -62,6 +61,7 @@ class FTPClient:
 
     def send_message(self, message):
         messageBytes = pickle.dumps(message)
+        print(len(messageBytes))
         i = 0
         '''
         while i < sys.getsizeof(messageBytes):
@@ -80,8 +80,8 @@ class FTPClient:
 
         self._socket.send(self._iv)
         '''
-        self._socket.send(bytes([0 for x in range(1,16)]))
-        self._socket.send(bytes(self._iv))
+        #self._socket.send(bytes([0 for x in range(1,16)]))
+        #self._socket.send(bytes(self._iv))
         
         time.sleep(5)
 
@@ -104,13 +104,6 @@ class FTPClient:
         print("Read!")
                           
     def write(self):
-        """ writes a file to the server """
-        '''
-        message = Message(mType=MessageType.get_file, mPayload=self._filename)
-        message = encrypt(pickle.dumps(message))
-        self._socket.write(message)
-        response = pickle.loads(decrypt(self._socket.recv(2048)))
-        '''
         print("Write!")
         message = Message(mType=MessageType.write_file, mPayload=self._filename)
         self._socket.send(pickle.dumps(message))
@@ -118,7 +111,6 @@ class FTPClient:
         #response = Message(mType=MessageType.confirmation, mPayload=True)
         response = pickle.loads(self._socket.recv(2048))
 
-        print("wut")
         if response.payload == True:
             with open("test.txt") as fd:
                 intxt = fd.read(16)
@@ -162,52 +154,6 @@ class FTPClient:
         ### Haven't used this yet, but might be useful to create message and serialize in same call ###
         message = Message(mType=m_type, mPayload=m_payload, target=m_target)
         return pickle.dumps(message)
-         
-    def sign_up(self):
-        """ 
-        handles client side interaction of signing in to server
-        
-        checks with the server to ensure name is available
-        """
-
-        # this function will not be used, but can be used to see how a client/server interaction would go
-        
-        '''
-        user = input("Please enter a user name (\"cancel\" to cancel): ")
-        response = self.request_user(user)
-
-        #get user name, send name to server for verification (that it isnt taken)
-        while response._payload != True and user != "cancel":
-            print("User name is taken.")
-            user = input("Please enter a user name (\"cancel\" to cancel): ")
-            response = self.request_user(user)
-        
-        if user != "cancel":
-            psw = getpass()
-            psw2 = getpass(prompt="Repeat password: ")
-            while psw != psw2:
-                print("Passwords do not match")
-                psw = getpass()
-                psw2 = getpass(prompt="Repeat password: ")
-                
-            message = Message(mType=Message.MessageType.signup, mPayload=psw)
-            self._socket.send(pickle.dumps(message))
-            response = pickle.loads(self._socket.recv(2048))
-        
-            if response._payload:
-                Menu.three_dots("Successfully signed up")
-        else:
-            Menu.three_dots("Cancelled signup process")
-         '''
-            
-    def request_user(self, user):
-        # won't be used, but called in sign up - delete after reviewing
-        '''
-        message = Message(mType=Message.MessageType.signup, mPayload=user)
-        self._socket.send(pickle.dumps(message))
-        response = pickle.loads(self._socket.recv(2048))
-        return response
-        '''
 
     @staticmethod
     def three_dots(message):
