@@ -62,12 +62,15 @@ class FTPServer:
         print("Got a client!")
         #main worker loop, receive message and check contents
         try:
+            #first message is unencrypted
             message = pickle.loads(client.recv(2048))
 
-            if message and message.type != MessageType.disconnect:
+            if message:
+                self.shakehand(message,client)
                 #switch handles message
-                self.type_switch(message, client)
-                self.recv_message(client)
+                message = self.recv_message(client)
+                #self.type_switch(message, client)
+                #self.recv_message(client)
 
                 #message = pickle.loads(client.recv(2048))
                 
@@ -112,6 +115,7 @@ class FTPServer:
         while len(messageBytes) != messageSize:
             ## REMEMBER TO DECRYPT AFTER 16 BYTES READ HERE ##
             chunk = client.recv(1)
+            
             messageBytes += chunk
 
         message = pickle.loads(messageBytes)
@@ -123,11 +127,10 @@ class FTPServer:
         print ("type: {0}".format(msg.type))
         print ("cipher: {0}".format(msg.cipher))
         print ("payload: {0}".format(str(msg.payload)))
-        if msg.type == MessageType.handshake:
-            self.shakehand(msg, client)
-        elif msg.type == MessageType.write_file:
+
+        if msg.type == MessageType.write_file:
             self.client_write(client, msg.payload)
-        elif msg.type == MessageType.send_file:
+        elif msg.type == MessageType.read_file:
             pass
         elif msg.type == MessageType.confirmation:
             pass

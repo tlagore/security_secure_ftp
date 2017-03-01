@@ -45,8 +45,6 @@ class FTPClient:
     def worker(self):
         """ worker thread for ftp_client """
         response = self.handshake()
-        #get this from the server later
-        #response = Message(mType=MessageType.confirmation, mPayload=True)
 
         print("{0} {1}".format(response.type, response.payload))
     
@@ -62,6 +60,8 @@ class FTPClient:
         """ breaks message into 16 byte chunks and sends them decrypted """
         messageBytes = pickle.dumps(message)
 
+        ## let's decide later if we want to send a fixed length header.
+        ## if so, we need to figure out how python can do that
         self._socket.send(self.encrypt(str(len(messageBytes)).encode('UTF-8')))
 
         i = 0        
