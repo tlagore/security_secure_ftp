@@ -89,11 +89,35 @@ class FTPServer:
             
         print("Exitting worker")
 
+    def get_msg_size(self, message):
+        """ takes in a serialized message and spreads its size over a 16 byte array """
+        header = []
+        size = len(message)
+        
+        if size > 256 * 16:
+            print("!! cannot fit a {0} sized message into a 16 byte array")
+            return -1
+        
+        while size > 255:
+            header += [255]
+            size -= 255
+
+        header += [size]
+        header += [0 for x in range(0, 16-len(header))]
+
+        return bytes(header)
+
+    def get_header_size(self, header):
+        size = 0
+        for el in header:
+            size += int(el)
+
+        return size
         
     def send_message(self, message, client):
         messageBytes = pickle.dumps(message)
-
-        client.send(self.encrypt(str(len(messageBytes)).encode('UTF-8')))
+        header = self.get_msg_size(messageBytes)
+        client.send(self.encrypt(header))
 
         i = 0        
         while i < len(messageBytes):
@@ -109,13 +133,16 @@ class FTPServer:
             if len(msg) != 16:
                 msg = msg + bytes([0 for x in range(len(msg)+1, 16)])
             client.send(self.encrypt(msg))
+
             
-        
     def recv_message(self, client):
         messageBytes = bytes([])
+
         chunk = self.decrypt(client.recv(16))
-        messageSize = int(chunk.decode())
-        print("Message size will be {0} bytes".format(int(chunk.decode())))
+        print(chunk)
+        messageSize = self.get_header_size(chunk)
+
+        print("Message size will be {0} bytes".format(messageSize))
 
         chunk = bytes([])
         while len(chunk) + len(messageBytes) != messageSize:
@@ -154,11 +181,13 @@ class FTPServer:
         
         self.ack_client(client, True)
 
-        message = pickle.loads(client.recv(2048))
+        message = self.recv_message(client)
+        #message = pickle.loads(client.recv(2048))
         while message.type != MessageType.eof:
             print(message.payload)
-            client.send(pickle.dumps(response))
-            message = pickle.loads(client.recv(2048))
+            message = self.recv_message(client)
+            #client.send(pickle.dumps(response))
+            #message = pickle.loads(client.recv(2048))
 
         
     def shakehand(self, message, client):

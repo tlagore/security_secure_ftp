@@ -1,6 +1,7 @@
 import sys
 import re
 import socket
+import traceback
 from ftp_client import FTPClient, IPFormatError
 
 def main(args=None):
@@ -45,12 +46,16 @@ def main(args=None):
             client = FTPClient(host_ip, port, command, filename, cipher, key)   
         except ValueError:
             print("!! {0} does not specify a valid port number.".format(sys.argv[3]))
+            print(traceback.format_exc())
         except IPFormatError:
             print("!! {0} does not specify a valid ip number.".format(sys.argv[3]))
+            print(traceback.format_exc())
         except socket.error as ex:
             print("!! Error deriving domain name: {0}".format(type(ex).__name__))
+            print(traceback.format_exc())
         except:
             print("!! Error: {0}".format(sys.exc_info()[1]))
+            print(traceback.format_exc())
         finally:
             print("!! Exitting...")
 

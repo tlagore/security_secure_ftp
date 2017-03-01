@@ -39,7 +39,6 @@ class FTPClient:
         response = self.handshake()
 
         print("{0} {1}".format(response.type, response.payload))
-    
         if response.payload == True:
             if self._command == "read":
                 self.read()
@@ -47,11 +46,11 @@ class FTPClient:
                 self.write()
         else:
             print("!! Server denied connection. Received false confirmation after handshake")
-
+        
     def handshake(self):
         """ generates an initialization vector for the server waits for confirmation """
         message = Message(mType=MessageType.handshake, mPayload=self._iv, mCipher=self._cipher)
-        self.send_message(message)
+        self._socket.send(pickle.dumps(message))
         response = self.recv_message()
         return response
 
@@ -104,10 +103,9 @@ class FTPClient:
         """ breaks message into 16 byte chunks and sends them decrypted """
         messageBytes = pickle.dumps(message)
 
-        ## let's decide later if we want to send a fixed length header.
-        ## if so, we need to figure out how python can do that
-        self._socket.send(self.encrypt(str(len(messageBytes)).encode('UTF-8')))
-
+        header = self.get_msg_size(messageBytes)
+        self._socket.send(self.encrypt(header))
+        
         i = 0        
         while i < len(messageBytes):
             msg = messageBytes[i:i+16:]
@@ -126,8 +124,8 @@ class FTPClient:
     def recv_message(self):
         messageBytes = bytes([])
         chunk = self.decrypt(self._socket.recv(16))
-        messageSize = int(chunk.decode())
-        print("Message size will be {0} bytes".format(int(chunk.decode())))
+        messageSize = self.get_header_size(chunk)
+        print("Message size will be {0} bytes".format(messageSize))
 
         chunk = bytes([])
         while len(chunk) + len(messageBytes) != messageSize:
@@ -147,6 +145,30 @@ class FTPClient:
         print(message.payload)
         return message
 
+    def get_header_size(self, header):
+        size = 0
+        for el in header:
+            size += int(el)
+
+        return size
+    
+    def get_msg_size(self, message):
+        """ takes in a serialized message and spreads its size over a 16 byte array """
+        header = []
+        size = len(message)
+        
+        if size > 256 * 16:
+            print("!! cannot fit a {0} sized message into a 16 byte array")
+            return -1
+        
+        while size > 255:
+            header += [255]
+            size -= 255
+
+        header += [size]
+        header += [0 for x in range(0, 16-len(header))]
+        
+        return bytes(header)
 
     def encrypt(self, data):
         """ encrypts the passed in data and returns the encrypted data """
