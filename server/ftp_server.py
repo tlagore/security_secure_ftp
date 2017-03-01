@@ -57,37 +57,21 @@ class FTPServer:
         """Handle a client"""
         (client, address) = args
         print("Got a client!")
-
-        socket = SecureSocket(client, None, None, None)
-        message = socket.recv_message(decrypt=True)
-        socket.send_message(message, encrypt=True)
-        message = socket.recv_message(decrypt=True)
-        socket.send_message(message, encrypt=True)
-        message = socket.recv_message(decrypt=True)
-        socket.send_message(message, encrypt=True)
-        message = socket.recv_message(decrypt=True)
-        socket.send_message(message, encrypt=True)
-
-        time.sleep(3)
-        '''
+        
         #main worker loop, receive message and check contents
         try:
             #first message is unencrypted
-            message = pickle.loads(client.recv(2048))
-
-            if message:
-                socket = self.shakehand(message,client)
-
+            socket = self.shakehand(client)
+            print("after socket!")
+            if socket:
+                message = socket.recv_message(decrypt=True)
+                #print(message.payload)
+                self.type_switch(message, socket)
+                
+                
             else:
-                print("Nothing Received")
-                return
-            
-            message = socket.recv_message()
-
-            self.type_switch(message, socket)
-            
-                #self.recv_message(client)
-                            
+                print("!! Received bad client handshake")
+            #self.recv_message(client)
                 #message = pickle.loads(client.recv(2048))
                 
             #message = pickle.loads(client.recv(2048))
@@ -96,10 +80,9 @@ class FTPServer:
             pass
         except:
             print("{0}".format(traceback.format_exception(sys.exc_info())))
-            print("Client disconnected")
+            print("!! Client disconnected")
             
-        print("Exitting worker")
-        '''
+        print("!! Exitting worker")
     
     def type_switch(self, msg, client):
         print ("Message Details:")
@@ -120,31 +103,32 @@ class FTPServer:
         
         self.ack_client(client, True)
 
-        message = self.recv_message(client)
-        #message = pickle.loads(client.recv(2048))
+        message = client.recv_message(decrypt=True)
         while message.type != MessageType.eof:
             print(message.payload)
-            message = self.recv_message(client)
-            #client.send(pickle.dumps(response))
-            #message = pickle.loads(client.recv(2048))
+            message = client.recv_message(decrypt=True)
+
+        self.ack_client(client, True)
 
         
-    def shakehand(self, message, client):
+    def shakehand(self, client):
         """ receives a handshake from the client containing cipher and iv """
+        socket = SecureSocket(client, None, self._key, None)
+        message = socket.recv_message(decrypt=False)
+
         if message.cipher != "aes256" and message.cipher != "aes128" and message.cipher != "none":
-            self.ack_client(client, False)
+            self.ack_client(socket, False)
             socket = None
         else:
             self._cipher = message.cipher
             self._iv = message.payload
-            socket = secure_socket(client, message.cipher, self._key, message.payload)
+            socket.set_cipher(self._cipher)
+            socket.set_iv(self._iv)
             self.ack_client(socket, True)
-
         return socket
 
     def eprint(self, *args, **kwargs):
         print(*args, file=sys.stderr, **kwargs)
-
         
     def read_message(self, message):
         """Read message from client"""
@@ -166,7 +150,7 @@ class FTPServer:
         ack is expected to be a boolean value (True/False)
         """
         response = Message(mType=MessageType.confirmation, mPayload=ack)
-        self.send_message(response, client)
+        client.send_message(response, encrypt=True)
 
     def __del__(self):
         """ destructor for chat server """        
