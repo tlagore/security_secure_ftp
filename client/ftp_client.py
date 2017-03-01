@@ -31,26 +31,7 @@ class FTPClient:
 
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect((host, port))
-        self._socket = SecureSocket(sock, cipher, key, self._iv)
-
-        message = Message(mType=MessageType.eof, mPayload="Here is another message, MESSAGE MESSAGE M ESSAGE!")
-        message2 = Message(mType=MessageType.eof, mPayload="Here is another message, MESSAGE MESSAGE M ESSAGE!")
-        message3 = Message(mType=MessageType.read_file, mPayload="file.txt")
-        message4 = Message(mType=MessageType.disconnect, mPayload=True)
-        
-        self._socket.send_message(message)
-        self._socket.recv_message()
-        
-        self._socket.send_message(message2)
-        self._socket.recv_message()
-        
-        self._socket.send_message(message3)
-        self._socket.recv_message()
-        
-        self._socket.send_message(message4)
-        self._socket.recv_message()
-        
-        
+        self._socket = SecureSocket(sock, cipher, key, self._iv)        
         self.worker()
 
         time.sleep(3)

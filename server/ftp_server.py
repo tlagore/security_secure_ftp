@@ -59,15 +59,14 @@ class FTPServer:
         print("Got a client!")
 
         socket = SecureSocket(client, None, None, None)
-        message = socket.recv_message()
-        socket.send_message(message)
-        message = socket.recv_message()
-        socket.send_message(message)
-        message = socket.recv_message()
-        socket.send_message(message)
-        message = socket.recv_message()
-        socket.send_message(message)
-
+        message = socket.recv_message(decrypt=True)
+        socket.send_message(message, encrypt=True)
+        message = socket.recv_message(decrypt=True)
+        socket.send_message(message, encrypt=True)
+        message = socket.recv_message(decrypt=True)
+        socket.send_message(message, encrypt=True)
+        message = socket.recv_message(decrypt=True)
+        socket.send_message(message, encrypt=True)
 
         time.sleep(3)
         '''
