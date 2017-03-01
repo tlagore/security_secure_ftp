@@ -5,12 +5,12 @@ import random
 import re
 import socket
 import threading
+import time
 import traceback
 import sys
 
 from multiprocessing.connection import Listener
-
-from message import Message, MessageType
+from secure_socket import Message, MessageType, SecureSocket
 
 class FTPServer:
     """Chat server class to handle chat server interactions"""
@@ -18,8 +18,6 @@ class FTPServer:
     def __init__(self, *args):
         """Constructor"""
         self._port = args[0]
-        self._cipher = None
-        self._iv = None
         if len(args) == 2:
             self._key = args[1]
         self._socket = 0
@@ -58,25 +56,22 @@ class FTPServer:
     def _worker(self, args):
         """Handle a client"""
         (client, address) = args
-
         print("Got a client!")
+        
         #main worker loop, receive message and check contents
         try:
             #first message is unencrypted
-            message = pickle.loads(client.recv(2048))
-
-            if message:
-                self.shakehand(message,client)
+            socket = self.shakehand(client)
+            print("after socket!")
+            if socket:
+                message = socket.recv_message(decrypt=True)
+                #print(message.payload)
+                self.type_switch(message, socket)
+                
+                
             else:
-                print("Nothing Received")
-                return
-            
-            message = self.recv_message(client)
-
-            self.type_switch(message, client)
-            
-                #self.recv_message(client)
-                            
+                print("!! Received bad client handshake")
+            #self.recv_message(client)
                 #message = pickle.loads(client.recv(2048))
                 
             #message = pickle.loads(client.recv(2048))
@@ -85,82 +80,9 @@ class FTPServer:
             pass
         except:
             print("{0}".format(traceback.format_exception(sys.exc_info())))
-            print("Client disconnected")
+            print("!! Client disconnected")
             
-        print("Exitting worker")
-
-    def get_msg_size(self, message):
-        """ takes in a serialized message and spreads its size over a 16 byte array """
-        header = []
-        size = len(message)
-        
-        if size > 256 * 16:
-            print("!! cannot fit a {0} sized message into a 16 byte array")
-            return -1
-        
-        while size > 255:
-            header += [255]
-            size -= 255
-
-        header += [size]
-        header += [0 for x in range(0, 16-len(header))]
-
-        return bytes(header)
-
-    def get_header_size(self, header):
-        size = 0
-        for el in header:
-            size += int(el)
-
-        return size
-        
-    def send_message(self, message, client):
-        messageBytes = pickle.dumps(message)
-        header = self.get_msg_size(messageBytes)
-        client.send(self.encrypt(header))
-
-        i = 0        
-        while i < len(messageBytes):
-            msg = messageBytes[i:i+16:]
-            if msg == b'':
-                msg = bytes([0 for x in range(1, 16)])
-            client.send(self.encrypt(msg))
-            i=i+16
-
-        if (i - 16) < len(messageBytes):
-            msg = messageBytes[i-16:len(messageBytes):]
-            
-            if len(msg) != 16:
-                msg = msg + bytes([0 for x in range(len(msg)+1, 16)])
-            client.send(self.encrypt(msg))
-
-            
-    def recv_message(self, client):
-        messageBytes = bytes([])
-
-        chunk = self.decrypt(client.recv(16))
-        print(chunk)
-        messageSize = self.get_header_size(chunk)
-
-        print("Message size will be {0} bytes".format(messageSize))
-
-        chunk = bytes([])
-        while len(chunk) + len(messageBytes) != messageSize:
-            chunk += client.recv(1)
-            if len(chunk) == 16:
-                chunk = self.decrypt(chunk)
-                messageBytes += chunk
-                chunk = bytes([])
-
-        ## if we hit an error later with padding, it could be here... might need to unpad before
-        ## decrypting
-        if len(chunk) != 16:
-            chunk = self.decrypt(chunk)
-            messageBytes += chunk
-
-        message = pickle.loads(messageBytes)
-        print(message.payload)
-        return message
+        print("!! Exitting worker")
     
     def type_switch(self, msg, client):
         print ("Message Details:")
@@ -181,23 +103,32 @@ class FTPServer:
         
         self.ack_client(client, True)
 
-        message = self.recv_message(client)
-        #message = pickle.loads(client.recv(2048))
+        message = client.recv_message(decrypt=True)
         while message.type != MessageType.eof:
             print(message.payload)
-            message = self.recv_message(client)
-            #client.send(pickle.dumps(response))
-            #message = pickle.loads(client.recv(2048))
+            message = client.recv_message(decrypt=True)
+
+        self.ack_client(client, True)
 
         
-    def shakehand(self, message, client):
+    def shakehand(self, client):
         """ receives a handshake from the client containing cipher and iv """
+        socket = SecureSocket(client, None, self._key, None)
+        message = socket.recv_message(decrypt=False)
+
         if message.cipher != "aes256" and message.cipher != "aes128" and message.cipher != "none":
-            self.ack_client(client, False)
+            self.ack_client(socket, False)
+            socket = None
         else:
             self._cipher = message.cipher
             self._iv = message.payload
-            self.ack_client(client, True)
+            socket.set_cipher(self._cipher)
+            socket.set_iv(self._iv)
+            self.ack_client(socket, True)
+        return socket
+
+    def eprint(self, *args, **kwargs):
+        print(*args, file=sys.stderr, **kwargs)
         
     def read_message(self, message):
         """Read message from client"""
@@ -219,7 +150,7 @@ class FTPServer:
         ack is expected to be a boolean value (True/False)
         """
         response = Message(mType=MessageType.confirmation, mPayload=ack)
-        self.send_message(response, client)
+        client.send_message(response, encrypt=True)
 
     def __del__(self):
         """ destructor for chat server """        
