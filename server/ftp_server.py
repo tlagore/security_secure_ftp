@@ -67,12 +67,16 @@ class FTPServer:
 
             if message:
                 self.shakehand(message,client)
-                #switch handles message
-                message = self.recv_message(client)
-                self.send_message(message, client)
-                #self.type_switch(message, client)
-                #self.recv_message(client)
+            else:
+                print("Nothing Received")
+                return
+            
+            message = self.recv_message(client)
 
+            self.type_switch(message, client)
+            
+                #self.recv_message(client)
+                            
                 #message = pickle.loads(client.recv(2048))
                 
             #message = pickle.loads(client.recv(2048))
@@ -147,16 +151,14 @@ class FTPServer:
     def client_write(self, client, filename):
         """ handles a client attempting to write to server """
         print("filename: {0}".format(filename))
-        response = Message(mType=MessageType.confirmation, mPayload=True)
-        client.send(pickle.dumps(response))
+        
+        self.ack_client(client, True)
 
         message = pickle.loads(client.recv(2048))
         while message.type != MessageType.eof:
             print(message.payload)
             client.send(pickle.dumps(response))
             message = pickle.loads(client.recv(2048))
-
-        client.send(pickle.dumps(response))
 
         
     def shakehand(self, message, client):
@@ -188,7 +190,7 @@ class FTPServer:
         ack is expected to be a boolean value (True/False)
         """
         response = Message(mType=MessageType.confirmation, mPayload=ack)
-        client.send(pickle.dumps(response))            
+        self.send_message(response, client)
 
     def __del__(self):
         """ destructor for chat server """        
