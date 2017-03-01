@@ -29,20 +29,10 @@ class FTPClient:
         self._cipher = cipher
         self._key = key
         self._iv = self.gen_nonce()
-        
+
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._socket.connect((host, port))
-
-        self.handshake()
-
-        message = Message(mType=MessageType.write_file, mPayload="helloworldhello! More things! Yeah! Love stuff.")
-        self.send_message(message)
-
-        message = self.recv_message()
-
-        #self._worker = threading.Thread(target=self.worker)
-        #self._worker.start()
-        #self._worker.join()
+        self.worker()
 
     def worker(self):
         """ worker thread for ftp_client """
@@ -57,6 +47,58 @@ class FTPClient:
                 self.write()
         else:
             print("!! Server denied connection. Received false confirmation after handshake")
+
+    def handshake(self):
+        """ generates an initialization vector for the server waits for confirmation """
+        message = Message(mType=MessageType.handshake, mPayload=self._iv, mCipher=self._cipher)
+        self.send_message(message)
+        response = self.recv_message()
+        return response
+
+    def read(self):
+        """ reads a file from the server"""
+        print("Read!")
+        message = Message(mType=MessageType.read_file, mPayload=self._filename)
+        self.send_message(message)
+
+        response = self.recv_message()
+
+        if response.payload == True:
+            #prepare to receive from server
+            print("Read file from server...")
+        else:
+            print("!! Server rejected file write")
+                          
+    def write(self):
+        """ attempts to write a file to server """
+        print("Write!")
+        message = Message(mType=MessageType.write_file, mPayload=self._filename)
+        self.send_message(message)
+        
+        response = self.recv_message()
+
+        if response.payload == True:
+            with open(self._filename) as fd:
+                intxt = fd.read(1024)
+                while intxt != "":
+                    message = Message(mType=MessageType.write_file, mPayload=intxt)
+                    self.send_message(message)
+                    response = self.recv_message()
+                    if response.payload == False:
+                        break
+
+                    intxt = fd.read(1024)
+
+            message = Message(mType=MessageType.eof, mPayload=True)
+            self.send_message(message)
+            response = self.recv_message(message)
+            
+            if response.payload == True:
+                print("!! Finished writing {0} to server".format(self._filename))
+            else:
+                print("!! Server indicated an error in writing file")
+        else:
+            print("!! Server rejected write command")
 
     def send_message(self, message):
         """ breaks message into 16 byte chunks and sends them decrypted """
@@ -105,49 +147,6 @@ class FTPClient:
         print(message.payload)
         return message
 
-    def handshake(self):
-        """ generates an initialization vector for the server waits for confirmation """
-        message = Message(mType=MessageType.handshake, mPayload=self._iv, mCipher=self._cipher)
-        self._socket.send(pickle.dumps(message))
-        response = pickle.loads(self.decrypt(self._socket.recv(2048)))
-        print(response.payload)
-        return response
-
-    def read(self):
-        """ reads a file from the server"""
-        #message = Message(mType=MessageType.get_file, mPayload=self._filename)
-        print("Read!")
-                          
-    def write(self):
-        print("Write!")
-        message = Message(mType=MessageType.write_file, mPayload=self._filename)
-        self._socket.send(pickle.dumps(message))
-        
-        #response = Message(mType=MessageType.confirmation, mPayload=True)
-        response = pickle.loads(self._socket.recv(2048))
-
-        if response.payload == True:
-            with open("test.txt") as fd:
-                intxt = fd.read(16)
-                while intxt != "":
-                    message = Message(mType=MessageType.write_file, mPayload=intxt.encode())
-                    self._socket.send(pickle.dumps(message))
-                    response = pickle.loads(self._socket.recv(2048))
-                    if response.payload == False:
-                        break
-
-                    intxt = fd.read(16)
-
-            message = Message(mType=MessageType.eof, mPayload=True)
-            self._socket.send(pickle.dumps(message))
-            response = pickle.loads(self._socket.recv(2048))
-            if response.payload == True:
-                print("!! Finished writing {0} to server".format(self._filename))
-            else:
-                print("!! Server indicated an error in writing file")
-        else:
-            print("!! Server rejected write command")
-
 
     def encrypt(self, data):
         """ encrypts the passed in data and returns the encrypted data """
@@ -163,13 +162,6 @@ class FTPClient:
         """ generates a nonce to synchronize with the server """
         return os.urandom(16)                   
                   
-    def serialize_message(m_type=None, m_payload=None, m_target=None):
-        """ creates a message object and returns the pickled (serialized) version of the object """
-
-        ### Haven't used this yet, but might be useful to create message and serialize in same call ###
-        message = Message(mType=m_type, mPayload=m_payload, target=m_target)
-        return pickle.dumps(message)
-
     @staticmethod
     def three_dots(message):
         """ prints 3 dots with a .5 second delay between each dot """
