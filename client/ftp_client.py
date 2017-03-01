@@ -7,6 +7,7 @@ import sys
 import threading
 import time
 
+from ..secure_socket import secure_socket
 from message import Message, MessageType
 
 class FTPClient:
@@ -26,18 +27,17 @@ class FTPClient:
         self._port = port
         self._command = command
         self._filename = filename
-        self._cipher = cipher
-        self._key = key
-        self._iv = self.gen_nonce()
 
-        self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._socket.connect((host, port))
+        socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        socket.connect((host, port))
+        self._socket = secure_socket.SecureSocket(socket, cipher, key, iv)
         self.worker()
 
     def worker(self):
         """ worker thread for ftp_client """
+        '''
         response = self.handshake()
-
+        
         print("{0} {1}".format(response.type, response.payload))
         if response.payload == True:
             if self._command == "read":
@@ -46,10 +46,12 @@ class FTPClient:
                 self.write()
         else:
             print("!! Server denied connection. Received false confirmation after handshake")
+        '''
         
     def handshake(self):
         """ generates an initialization vector for the server waits for confirmation """
         message = Message(mType=MessageType.handshake, mPayload=self._iv, mCipher=self._cipher)
+        self._socket.send_unencrypted(pickle.dumps(message))
         self._socket.send(pickle.dumps(message))
         response = self.recv_message()
         return response
@@ -98,92 +100,15 @@ class FTPClient:
                 print("!! Server indicated an error in writing file")
         else:
             print("!! Server rejected write command")
-
-    def send_message(self, message):
-        """ breaks message into 16 byte chunks and sends them decrypted """
-        messageBytes = pickle.dumps(message)
-
-        header = self.get_msg_size(messageBytes)
-        self._socket.send(self.encrypt(header))
-        
-        i = 0        
-        while i < len(messageBytes):
-            msg = messageBytes[i:i+16:]
-            if msg == b'':
-                msg = bytes([0 for x in range(1, 16)])
-            self._socket.send(self.encrypt(msg))
-            i=i+16
-
-        if (i - 16) < len(messageBytes):
-            msg = messageBytes[i-16:len(messageBytes):]
             
-            if len(msg) != 16:
-                msg = msg + bytes([0 for x in range(len(msg)+1, 16)])
-            self._socket.send(self.encrypt(msg))
-
-    def recv_message(self):
-        messageBytes = bytes([])
-        chunk = self.decrypt(self._socket.recv(16))
-        messageSize = self.get_header_size(chunk)
-        print("Message size will be {0} bytes".format(messageSize))
-
-        chunk = bytes([])
-        while len(chunk) + len(messageBytes) != messageSize:
-            chunk += self._socket.recv(1)
-            if len(chunk) == 16:
-                chunk = self.decrypt(chunk)
-                messageBytes += chunk
-                chunk = bytes([])
-
-        ## if we hit an error later with padding, it could be here... might need to unpad before
-        ## decrypting
-        if len(chunk) != 16:
-            chunk = self.decrypt(chunk)
-            messageBytes += chunk
-
-        message = pickle.loads(messageBytes)
-        print(message.payload)
-        return message
-
-    def get_header_size(self, header):
-        size = 0
-        for el in header:
-            size += int(el)
-
-        return size
-    
-    def get_msg_size(self, message):
-        """ takes in a serialized message and spreads its size over a 16 byte array """
-        header = []
-        size = len(message)
-        
-        if size > 256 * 16:
-            print("!! cannot fit a {0} sized message into a 16 byte array")
-            return -1
-        
-        while size > 255:
-            header += [255]
-            size -= 255
-
-        header += [size]
-        header += [0 for x in range(0, 16-len(header))]
-        
-        return bytes(header)
-
-    def encrypt(self, data):
-        """ encrypts the passed in data and returns the encrypted data """
-        # TODO: Encrypt the data...
-        return data
-
-    def decrypt(self, data):
-        """ decrypts the passed in data and returns the decrypted data """
-        # TODO: Decrypt the data...
-        return data
                                 
     def gen_nonce(self):
         """ generates a nonce to synchronize with the server """
         return os.urandom(16)                   
-                  
+
+    def eprint(self, *args, **kwargs):
+        print(*args, file=sys.stderr, **kwargs)
+
     @staticmethod
     def three_dots(message):
         """ prints 3 dots with a .5 second delay between each dot """

@@ -9,6 +9,7 @@ import traceback
 import sys
 
 from multiprocessing.connection import Listener
+from ..secure_socket import secure_socket
 
 from message import Message, MessageType
 
@@ -18,8 +19,6 @@ class FTPServer:
     def __init__(self, *args):
         """Constructor"""
         self._port = args[0]
-        self._cipher = None
-        self._iv = None
         if len(args) == 2:
             self._key = args[1]
         self._socket = 0
@@ -58,22 +57,24 @@ class FTPServer:
     def _worker(self, args):
         """Handle a client"""
         (client, address) = args
-
         print("Got a client!")
+
+        '''
         #main worker loop, receive message and check contents
         try:
             #first message is unencrypted
             message = pickle.loads(client.recv(2048))
 
             if message:
-                self.shakehand(message,client)
+                socket = self.shakehand(message,client)
+
             else:
                 print("Nothing Received")
                 return
             
-            message = self.recv_message(client)
+            message = socket.recv_message()
 
-            self.type_switch(message, client)
+            self.type_switch(message, socket)
             
                 #self.recv_message(client)
                             
@@ -88,79 +89,7 @@ class FTPServer:
             print("Client disconnected")
             
         print("Exitting worker")
-
-    def get_msg_size(self, message):
-        """ takes in a serialized message and spreads its size over a 16 byte array """
-        header = []
-        size = len(message)
-        
-        if size > 256 * 16:
-            print("!! cannot fit a {0} sized message into a 16 byte array")
-            return -1
-        
-        while size > 255:
-            header += [255]
-            size -= 255
-
-        header += [size]
-        header += [0 for x in range(0, 16-len(header))]
-
-        return bytes(header)
-
-    def get_header_size(self, header):
-        size = 0
-        for el in header:
-            size += int(el)
-
-        return size
-        
-    def send_message(self, message, client):
-        messageBytes = pickle.dumps(message)
-        header = self.get_msg_size(messageBytes)
-        client.send(self.encrypt(header))
-
-        i = 0        
-        while i < len(messageBytes):
-            msg = messageBytes[i:i+16:]
-            if msg == b'':
-                msg = bytes([0 for x in range(1, 16)])
-            client.send(self.encrypt(msg))
-            i=i+16
-
-        if (i - 16) < len(messageBytes):
-            msg = messageBytes[i-16:len(messageBytes):]
-            
-            if len(msg) != 16:
-                msg = msg + bytes([0 for x in range(len(msg)+1, 16)])
-            client.send(self.encrypt(msg))
-
-            
-    def recv_message(self, client):
-        messageBytes = bytes([])
-
-        chunk = self.decrypt(client.recv(16))
-        print(chunk)
-        messageSize = self.get_header_size(chunk)
-
-        print("Message size will be {0} bytes".format(messageSize))
-
-        chunk = bytes([])
-        while len(chunk) + len(messageBytes) != messageSize:
-            chunk += client.recv(1)
-            if len(chunk) == 16:
-                chunk = self.decrypt(chunk)
-                messageBytes += chunk
-                chunk = bytes([])
-
-        ## if we hit an error later with padding, it could be here... might need to unpad before
-        ## decrypting
-        if len(chunk) != 16:
-            chunk = self.decrypt(chunk)
-            messageBytes += chunk
-
-        message = pickle.loads(messageBytes)
-        print(message.payload)
-        return message
+        '''
     
     def type_switch(self, msg, client):
         print ("Message Details:")
@@ -194,10 +123,18 @@ class FTPServer:
         """ receives a handshake from the client containing cipher and iv """
         if message.cipher != "aes256" and message.cipher != "aes128" and message.cipher != "none":
             self.ack_client(client, False)
+            socket = None
         else:
             self._cipher = message.cipher
             self._iv = message.payload
-            self.ack_client(client, True)
+            socket = secure_socket(client, message.cipher, self._key, message.payload)
+            self.ack_client(socket, True)
+
+        return socket
+
+    def eprint(self, *args, **kwargs):
+        print(*args, file=sys.stderr, **kwargs)
+
         
     def read_message(self, message):
         """Read message from client"""
