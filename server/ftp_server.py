@@ -5,13 +5,12 @@ import random
 import re
 import socket
 import threading
+import time
 import traceback
 import sys
 
 from multiprocessing.connection import Listener
-from ..secure_socket import secure_socket
-
-from message import Message, MessageType
+from secure_socket import Message, MessageType, SecureSocket
 
 class FTPServer:
     """Chat server class to handle chat server interactions"""
@@ -59,6 +58,18 @@ class FTPServer:
         (client, address) = args
         print("Got a client!")
 
+        socket = SecureSocket(client, None, None, None)
+        message = socket.recv_message()
+        socket.send_message(message)
+        message = socket.recv_message()
+        socket.send_message(message)
+        message = socket.recv_message()
+        socket.send_message(message)
+        message = socket.recv_message()
+        socket.send_message(message)
+
+
+        time.sleep(3)
         '''
         #main worker loop, receive message and check contents
         try:

@@ -6,9 +6,9 @@ import socket
 import sys
 import threading
 import time
+import struct
 
-from ..secure_socket import secure_socket
-from message import Message, MessageType
+from secure_socket import Message, MessageType, SecureSocket
 
 class FTPClient:
     """Chat server class to handle chat server interactions"""
@@ -27,11 +27,33 @@ class FTPClient:
         self._port = port
         self._command = command
         self._filename = filename
+        self._iv = self.gen_nonce()
 
-        socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        socket.connect((host, port))
-        self._socket = secure_socket.SecureSocket(socket, cipher, key, iv)
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.connect((host, port))
+        self._socket = SecureSocket(sock, cipher, key, self._iv)
+
+        message = Message(mType=MessageType.eof, mPayload="Here is another message, MESSAGE MESSAGE M ESSAGE!")
+        message2 = Message(mType=MessageType.eof, mPayload="Here is another message, MESSAGE MESSAGE M ESSAGE!")
+        message3 = Message(mType=MessageType.read_file, mPayload="file.txt")
+        message4 = Message(mType=MessageType.disconnect, mPayload=True)
+        
+        self._socket.send_message(message)
+        self._socket.recv_message()
+        
+        self._socket.send_message(message2)
+        self._socket.recv_message()
+        
+        self._socket.send_message(message3)
+        self._socket.recv_message()
+        
+        self._socket.send_message(message4)
+        self._socket.recv_message()
+        
+        
         self.worker()
+
+        time.sleep(3)
 
     def worker(self):
         """ worker thread for ftp_client """
