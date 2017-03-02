@@ -89,9 +89,27 @@ class FTPServer:
         if msg.type == MessageType.write_file:
             self.client_write(client, msg.payload)
         elif msg.type == MessageType.read_file:
-            pass
+            self.client_read(client, msg.payload)
         elif msg.type == MessageType.confirmation:
             pass
+
+    def client_read(self, client, filename):
+        """ handles a client attempting to read from the server  """
+        print("!! Client requesting filename: {0}".format(filename))
+
+        try:
+            with open(filename, 'rb') as fd:
+                self.ack_client(client, True)
+                intxt = fd.read(1024)
+                while intxt != b'':
+                    message = Message(mType=MessageType.write_file, mPayload=intxt)
+                    client.send_message(message, encrypt=True)
+                    intxt = fd.read(1024)
+
+            message = Message(mType=MessageType.eof, mPayload=True)
+            client.send_message(message, encrypt=True)
+        except Exception as ex:
+            self.send_error(client, "Error writing file: {0}".format(sys.exc_info()[1]))
 
     def client_write(self, client, filename):
         """ handles a client attempting to write to server """
@@ -108,9 +126,14 @@ class FTPServer:
 
                     self.ack_client(client, True)
         except Exception as ex:
-            eprint("!! Error writing file: {0}".format(sys.exc_info()[1]))
-            error = Message(mType=MessageType.error, mPayload="Error writing file: {0}: ".format(sys.exc_info()[1]))
-            client.send_message(error, encrypt=True)            
+            self.send_error(client, "!! Error writing file: {0}".format(sys.exc_info()[1]))
+
+    def send_error(self, client, error):
+        """ send error to client """
+        self.eprint("!! " + error)
+        error = Message(mType=MessageType.error, mPayload=error)
+
+        client.send_message(error, encrypt=True)
 
     def shakehand(self, client):
         """ receives a handshake from the client containing cipher and iv """

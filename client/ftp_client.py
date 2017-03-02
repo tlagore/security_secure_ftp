@@ -69,10 +69,17 @@ class FTPClient:
         response = self._socket.recv_message(decrypt=True)
 
         if response.payload == True:
-            #prepare to receive from server
-            print("Read file from server...")
-        else:
-            print("!! Server rejected file write")
+            response = self._socket.recv_message(decrypt=True)
+            while response.type != MessageType.eof and response.type != MessageType.error:
+                print(response.payload)
+                response = self._socket.recv_message(decrypt=True)
+            
+        else:    
+            print("!! Server rejected read command")
+
+        if response.type == MessageType.error:
+            print("!! {0}" + response.payload)
+
                           
     def write(self):
         """ attempts to write a file to server """
@@ -90,7 +97,6 @@ class FTPClient:
                     self._socket.send_message(message, encrypt=True)
                     intxt = fd.read(1024)
 
-            print("Done reading file")
             message = Message(mType=MessageType.eof, mPayload=True)
             self._socket.send_message(message, encrypt=True)
             response = self._socket.recv_message(decrypt=True)
@@ -100,6 +106,9 @@ class FTPClient:
             else:
                 print("!! Server indicated an error in writing file")
         else:
+            if response.type == MessageType.error:
+                print("!! {0}" + response.payload)
+                
             print("!! Server rejected write command")
             
                                 
