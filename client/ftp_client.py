@@ -30,6 +30,8 @@ class FTPClient:
         self._iv = self.gen_nonce()
         self._cipher = cipher
 
+        
+        
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect((host, port))
         self._socket = SecureSocket(sock, cipher, key, self._iv)        
