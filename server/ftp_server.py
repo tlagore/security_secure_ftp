@@ -11,6 +11,7 @@ import sys
 
 from datetime import datetime
 from multiprocessing.connection import Listener
+
 from secure_socket import Message, MessageType, SecureSocket
 
 class FTPServer:
@@ -22,7 +23,7 @@ class FTPServer:
         if len(args) == 2:
             self._key = args[1]
         self._socket = 0
-
+        
     def start_server(self):
         """Initializes the server socket"""
         ip = socket.gethostbyname(socket.getfqdn())
@@ -149,6 +150,8 @@ class FTPServer:
             socket.set_cipher(message.cipher)
             socket.set_iv(message.payload)
             print(self.time_message("Cipher: {0}".format(message.cipher)))
+            socket.init_aescs()
+
             self.ack_client(socket, True)
         return socket
 
