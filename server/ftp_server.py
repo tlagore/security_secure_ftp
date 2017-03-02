@@ -9,6 +9,7 @@ import time
 import traceback
 import sys
 
+from datetime import datetime
 from multiprocessing.connection import Listener
 from secure_socket import Message, MessageType, SecureSocket
 
@@ -25,13 +26,14 @@ class FTPServer:
     def start_server(self):
         """Initializes the server socket"""
         ip = socket.gethostbyname(socket.getfqdn())
-        print ("Listening @ {0} on port {1}".format(ip, self._port))
-        print ("Using secret key: {0}".format(self._key))
-        
+        print(self.time_message("--------------------------------------"))
+        print (self.time_message("Listening @ {0} on port {1}".format(ip, self._port)))
+        print (self.time_message("Using secret key: {0}".format(self._key)))
+        print(self.time_message("--------------------------------------"))
         if re.match("127.0.*", ip):
-            print("If this number is 127.0.0.1 or similar, comment out")
-            print("{0}\t{1}".format(ip, socket.getfqdn()))
-            print("In /etc/hosts")
+            print(self.time_message("If this number is 127.0.0.1 or similar, comment out"))
+            print(self.time_message("{0}\t{1}".format(ip, socket.getfqdn())))
+            print(self.time_message("In /etc/hosts"))
 
         try:
             self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -42,31 +44,35 @@ class FTPServer:
 
             self._listen()
         except socket.error as ex:
-            print("Error initializing socket: {0}".format(type(ex).__name__))
+            print(self.time_message("Error initializing socket: {0}".format(type(ex).__name__)))
             
     def _listen(self):
         """Listen for a client"""
         while True:
             self._socket.listen(5);
             (client, address) = self._socket.accept()
-            print("Client connected.")
             clientThread = threading.Thread(target=self._worker, args=((client, address),))
-            clientThread.start()            
-    
+            clientThread.start()
+
+            
+    def time_message(self, message):
+        return datetime.now().strftime("!! %H:%M:%S: ") + message
+            
     def _worker(self, args):
         """Handle a client"""
         (client, address) = args
-        print("!! client connected {0}".format(address))
+        print(self.time_message("Client connected: {0}".format(address[0])))
         
         try:
             socket = self.shakehand(client)
             
             if socket:
+                print(self.time_message("--------------------------------------"))
                 message = socket.recv_message(decrypt=True)
                 self.type_switch(message, socket)
                                 
             else:
-                print("!! Received bad client handshake")
+                print(self.time_message("Received bad client handshake"))
             #self.recv_message(client)
                 #message = pickle.loads(client.recv(2048))
                 
@@ -75,17 +81,12 @@ class FTPServer:
         except (EOFError) as e:
             pass
         except:
-            print("{0}".format(traceback.format_exception(sys.exc_info())))
-            print("!! Client disconnected")
+            print(self.time_message("{0}".format(traceback.format_exception(sys.exc_info()))))
+            print(self.time_message("!! Client disconnected"))
             
-        print("!! Exitting worker")
+        print(self.time_message("Exitting worker"))
     
     def type_switch(self, msg, client):
-        print ("Message Details:")
-        print ("type: {0}".format(msg.type))
-        print ("cipher: {0}".format(msg.cipher))
-        print ("payload: {0}".format(str(msg.payload)))
-
         if msg.type == MessageType.write_file:
             self.client_write(client, msg.payload)
         elif msg.type == MessageType.read_file:
@@ -95,7 +96,7 @@ class FTPServer:
 
     def client_read(self, client, filename):
         """ handles a client attempting to read from the server  """
-        print("!! Client requesting filename: {0}".format(filename))
+        print(self.time_message("Client requesting filename: {0}".format(filename)))
 
         try:
             with open(filename, 'rb') as fd:
@@ -113,7 +114,7 @@ class FTPServer:
 
     def client_write(self, client, filename):
         """ handles a client attempting to write to server """
-        print("filename: {0}".format(filename))
+        print(self.time_message("Client requested to write filename: {0}".format(filename)))
 
         try:
             with open(filename, 'wb') as fd:
@@ -124,13 +125,14 @@ class FTPServer:
                     fd.write(message.payload)
                     message = client.recv_message(decrypt=True)
 
-                    self.ack_client(client, True)
+                self.ack_client(client, True)
+                print(self.time_message("Wrote {0} to file.".format(filename)))
         except Exception as ex:
-            self.send_error(client, "!! Error writing file: {0}".format(sys.exc_info()[1]))
+            self.send_error(client, "Error writing file: {0}".format(sys.exc_info()[1]))
 
     def send_error(self, client, error):
         """ send error to client """
-        self.eprint("!! " + error)
+        self.eprint(self.time_message(error))
         error = Message(mType=MessageType.error, mPayload=error)
 
         client.send_message(error, encrypt=True)
@@ -144,10 +146,9 @@ class FTPServer:
             self.ack_client(socket, False)
             socket = None
         else:
-            self._cipher = message.cipher
-            self._iv = message.payload
-            socket.set_cipher(self._cipher)
-            socket.set_iv(self._iv)
+            socket.set_cipher(message.cipher)
+            socket.set_iv(message.payload)
+            print(self.time_message("Cipher: {0}".format(message.cipher)))
             self.ack_client(socket, True)
         return socket
 
@@ -184,6 +185,6 @@ class FTPServer:
                 #json.dump(self._users, out)
             self._socket.close()
         except:
-            print("Error closing socket. May not have been initialized")
+            print(self.time_message("Error closing socket. May not have been initialized"))
         finally:
-            print("Server exitting.")
+            print(self.time_message("Server exitting."))

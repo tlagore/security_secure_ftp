@@ -107,7 +107,7 @@ class FTPClient:
                 print("!! Server indicated an error in writing file")
         else:
             if response.type == MessageType.error:
-                print("!! {0}" + response.payload)
+                print("{0}".format(response.payload))
                 
             print("!! Server rejected write command")
             
