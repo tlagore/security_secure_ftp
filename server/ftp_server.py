@@ -9,7 +9,6 @@ import time
 import traceback
 import sys
 
-from multiprocessing.connection import Listener
 from secure_socket import Message, MessageType, SecureSocket
 
 class FTPServer:
@@ -21,7 +20,7 @@ class FTPServer:
         if len(args) == 2:
             self._key = args[1]
         self._socket = 0
-
+        
     def start_server(self):
         """Initializes the server socket"""
         ip = socket.gethostbyname(socket.getfqdn())
@@ -124,6 +123,7 @@ class FTPServer:
             self._iv = message.payload
             socket.set_cipher(self._cipher)
             socket.set_iv(self._iv)
+            socket.init_aescs()
             self.ack_client(socket, True)
         return socket
 

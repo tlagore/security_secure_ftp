@@ -8,6 +8,7 @@ import sys
 import threading
 import time
 
+from aescs import AESCipher
 
 class SecureSocket:
     """Chat server class to handle chat server interactions"""
@@ -18,7 +19,12 @@ class SecureSocket:
         self._cipher = cipher
         self._key = key
         self._iv = iv
-       
+        self._aescs = AESCipher(key, iv)
+        self._aescs.init_suites()
+
+    def init_aescs(self):
+        self._aescs.init_suites()
+        
     def send_message(self, message, encrypt):
         """ breaks message into 16 byte chunks and sends them decrypted """
         messageBytes = pickle.dumps(message)

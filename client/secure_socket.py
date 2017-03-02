@@ -16,7 +16,13 @@ class SecureSocket:
     def __init__(self, socket, cipher, key, iv):
         """constructor for chat client"""
         self._socket = socket
-        self._aescs = AESCipher(cipher, key, iv)
+        self._cipher = cipher
+        self._key = key
+        self._iv = iv
+        self._aescs = AESCipher(key, iv)
+        self._aescs.init_suites()
+        
+    def init_aescs(self):
         self._aescs.init_suites()
         
     def send_message(self, message, encrypt):
