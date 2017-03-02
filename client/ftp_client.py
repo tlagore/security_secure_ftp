@@ -83,13 +83,14 @@ class FTPClient:
         response = self._socket.recv_message(decrypt=True)
 
         if response.payload == True:
-            with open(self._filename) as fd:
+            with open(self._filename, "rb") as fd:
                 intxt = fd.read(1024)
-                while intxt != "":
+                while intxt != b'':
                     message = Message(mType=MessageType.write_file, mPayload=intxt)
                     self._socket.send_message(message, encrypt=True)
                     intxt = fd.read(1024)
-                    
+
+            print("Done reading file")
             message = Message(mType=MessageType.eof, mPayload=True)
             self._socket.send_message(message, encrypt=True)
             response = self._socket.recv_message(decrypt=True)

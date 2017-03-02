@@ -115,7 +115,7 @@ class MessageType(Enum):
     read_file = 1
     write_file = 2
     confirmation = 3
-    disconnect = 4
+    error = 4
     eof = 5
 
 class Message:
@@ -125,7 +125,7 @@ class Message:
 
         if mPayload is None:
             raise MessageError("Object of type 'Message' cannot have an empty payload.")
-        
+
         self._type = mType
         self._cipher = mCipher
         self._payload = mPayload

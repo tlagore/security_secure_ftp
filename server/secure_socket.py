@@ -115,7 +115,7 @@ class MessageType(Enum):
     read_file = 1
     write_file = 2
     confirmation = 3
-    disconnect = 4
+    error = 4
     eof = 5
 
 class Message:

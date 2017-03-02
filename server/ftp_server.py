@@ -56,19 +56,15 @@ class FTPServer:
     def _worker(self, args):
         """Handle a client"""
         (client, address) = args
-        print("Got a client!")
+        print("!! client connected {0}".format(address))
         
-        #main worker loop, receive message and check contents
         try:
-            #first message is unencrypted
             socket = self.shakehand(client)
-            print("after socket!")
+            
             if socket:
                 message = socket.recv_message(decrypt=True)
-                #print(message.payload)
                 self.type_switch(message, socket)
-                
-                
+                                
             else:
                 print("!! Received bad client handshake")
             #self.recv_message(client)
@@ -100,17 +96,22 @@ class FTPServer:
     def client_write(self, client, filename):
         """ handles a client attempting to write to server """
         print("filename: {0}".format(filename))
-        
-        self.ack_client(client, True)
 
-        message = client.recv_message(decrypt=True)
-        while message.type != MessageType.eof:
-            print(message.payload)
-            message = client.recv_message(decrypt=True)
+        try:
+            with open(filename, 'wb') as fd:
+                self.ack_client(client, True)
 
-        self.ack_client(client, True)
+                message = client.recv_message(decrypt=True)
+                while message.type != MessageType.eof:
+                    fd.write(message.payload)
+                    message = client.recv_message(decrypt=True)
 
-        
+                    self.ack_client(client, True)
+        except Exception as ex:
+            eprint("!! Error writing file: {0}".format(sys.exc_info()[1]))
+            error = Message(mType=MessageType.error, mPayload="Error writing file: {0}: ".format(sys.exc_info()[1]))
+            client.send_message(error, encrypt=True)            
+
     def shakehand(self, client):
         """ receives a handshake from the client containing cipher and iv """
         socket = SecureSocket(client, None, self._key, None)
