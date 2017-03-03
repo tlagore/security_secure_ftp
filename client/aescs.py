@@ -23,11 +23,8 @@ class AESCipher:
 
         b64_plain_text = base64.b64encode(plain_text)
 
-        print("b64 raw")
-        print(len(b64_plain_text))
-        print(b64_plain_text)
-        
         p_plain_text = self._pad(b64_plain_text)
+
         self._ecs = AES.new(self._key, AES.MODE_CBC, self._iv)
         ct = self._ecs.encrypt(p_plain_text)
         
@@ -50,23 +47,13 @@ class AESCipher:
         self._dcs = AES.new(self._key, AES.MODE_CBC, self._iv)
         dct = self._dcs.decrypt(cipher_text)
 
-        print("dct")
-        print(len(dct))
-        print(dct)
-
         upt = self._unpad(dct)
-
-        print("upt")
-        print(len(upt))
-        print(upt)
         
         rb64t = base64.b64decode(upt)
 
-        print("rb64t")
+        print("raw")
         print(len(rb64t))
         print(rb64t)
-
-        print("Decrypted")
         
         print("---------------------------")
         return rb64t
