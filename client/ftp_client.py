@@ -56,8 +56,9 @@ class FTPClient:
     def handshake(self):
         """ generates an initialization vector for the server waits for confirmation """
         message = Message(mType=MessageType.handshake, mPayload=self._iv, mCipher=self._cipher)
-        self._socket.send_message(message, False)
+        self._socket.send_message(message, encrypt=False)
         response = self._socket.recv_message(True)
+        print("Handshake complete")
         return response
 
     def read(self):

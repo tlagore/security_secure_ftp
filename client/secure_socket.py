@@ -23,6 +23,7 @@ class SecureSocket:
         self._aescs.init_suites()
         
     def init_aescs(self):
+        self._aescs = AESCipher(self._key, self._iv)
         self._aescs.init_suites()
         
     def send_message(self, message, encrypt):
@@ -32,45 +33,68 @@ class SecureSocket:
         print("Message data after serialization:")
         print(messageBytes)
         print(len(messageBytes))
-        
-        messageLen = len(messageBytes)
-        header = struct.pack("IIII", messageLen, messageLen, messageLen, messageLen)
 
-        print("Header for Message:")
-        print(header)
-        print(len(header))
-        
         if encrypt:
-            header = self.encrypt(header)
             messageBytes = self.encrypt(messageBytes)
+
+            messageLen = len(messageBytes)
+            # need to calculate after message encoding, padding and encryption
+            header = struct.pack("IIII", messageLen, messageLen, messageLen, messageLen)
+
+            print("Header for Message:")
+            print(header)
+            print(len(header))
+
+            header = self.encrypt(header)            
             print("Data is encrypted")
             print("header cipher:")
             print(len(header))
             print(header)
             print("message cipher:")
-            print(len(message))
-            print(message)
+            print(len(messageBytes))
+            print(messageBytes)            
+        else:
+            messageLen = len(messageBytes)
+            header = struct.pack("IIII", messageLen, messageLen, messageLen, messageLen)
+
+            print("Header for Message:")
+            print(header)
+            print(len(header))
 
         print("Sending data")
         print("Attempting to send header")
-        self._socket.sendall(self.encrypt(header))
+        self._socket.sendall(header)
         print("header sent")
         print("attempting to send message")
-        self._socket.sendall(self.encrypt(messageBytes))
+        self._socket.sendall(messageBytes)
         print("message sent")
-        
+
+            
     def recv_message(self, decrypt=True):
         """ receives an encrypted message, decrypts it, and returns the message object """
-        header = self.recvall(16)
-        
+    
         if decrypt:
+            header = self.recvall(32) # encrypted header gets padding
+            print("Decrypting header")
             header = self.decrypt(header)
+            print("Done. Contents:")
+            print(len(header))
+            print(header)
+        else:
+             header = self.recvall(16) 
             
         messageSize = self.get_msg_size(header)
+        print("Message size is {0}".format(messageSize))
         messageBytes = self.recvall(messageSize)
-
+        print("Received all {0} bytes".format(messageSize))
+        print(messageBytes)
+        
         if decrypt:
+            print("Decrypting message")
             messageBytes = self.decrypt(messageBytes)
+            print("Done. Contents:")
+            print(len(messageBytes))
+            print(messageBytes)
         
         message = pickle.loads(messageBytes)
         return message
@@ -91,14 +115,12 @@ class SecureSocket:
     
     def encrypt(self, data):
         """ encrypts the passed in data and returns the encrypted data """
-        #TODO padding
         if self._cipher != 'none':
             return self._aescs.encrypt(data)
         return data
 
     def decrypt(self, data):
         """ decrypts the passed in data and returns the decrypted data """
-        # TODO padding
         if self._cipher != 'none':
             return self._aescs.decrypt(data)
         return data
