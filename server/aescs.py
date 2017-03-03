@@ -14,13 +14,6 @@ class AESCipher:
             self._dcs = AES.new(self._key, AES.MODE_CBC, self._iv)
     
     def encrypt(self, plain_text):
-        print("---------------------------")
-        print("ENCRYPTION")
-        
-        print("raw:")
-        print(len(plain_text))
-        print(plain_text)
-
         b64_plain_text = base64.b64encode(plain_text)
 
         p_plain_text = self._pad(b64_plain_text)
@@ -28,22 +21,9 @@ class AESCipher:
         self._ecs = AES.new(self._key, AES.MODE_CBC, self._iv)
         ct = self._ecs.encrypt(p_plain_text)
         
-        print("Cipher text:")
-        print(len(ct))
-        print(ct)
-
-        print("---------------------------")        
-
         return ct
 
     def decrypt(self, cipher_text):
-        print("---------------------------")
-        print("DECRYPTION")
-
-        print("Cipher text:")
-        print(len(cipher_text))
-        print(cipher_text)
-
         self._dcs = AES.new(self._key, AES.MODE_CBC, self._iv)
         dct = self._dcs.decrypt(cipher_text)
 
@@ -51,11 +31,6 @@ class AESCipher:
         
         rb64t = base64.b64decode(upt)
 
-        print("raw")
-        print(len(rb64t))
-        print(rb64t)
-        
-        print("---------------------------")
         return rb64t
 
     def _pad(self, s):

@@ -30,44 +30,19 @@ class SecureSocket:
         """ breaks message into 16 byte chunks and sends them decrypted """
         messageBytes = pickle.dumps(message)
         
-        print("Message data after serialization:")
-        print(messageBytes)
-        print(len(messageBytes))
-
         if encrypt:
             messageBytes = self.encrypt(messageBytes)
 
             messageLen = len(messageBytes)
             # need to calculate after message encoding, padding and encryption
             header = struct.pack("IIII", messageLen, messageLen, messageLen, messageLen)
-
-            print("Header for Message:")
-            print(header)
-            print(len(header))
-
             header = self.encrypt(header)            
-            print("Data is encrypted")
-            print("header cipher:")
-            print(len(header))
-            print(header)
-            print("message cipher:")
-            print(len(messageBytes))
-            print(messageBytes)            
         else:
             messageLen = len(messageBytes)
             header = struct.pack("IIII", messageLen, messageLen, messageLen, messageLen)
 
-            print("Header for Message:")
-            print(header)
-            print(len(header))
-
-        print("Sending data")
-        print("Attempting to send header")
         self._socket.sendall(header)
-        print("header sent")
-        print("attempting to send message")
         self._socket.sendall(messageBytes)
-        print("message sent")
 
             
     def recv_message(self, decrypt=True):
@@ -75,26 +50,16 @@ class SecureSocket:
     
         if decrypt:
             header = self.recvall(32) # encrypted header gets padding
-            print("Decrypting header")
             header = self.decrypt(header)
-            print("Done. Contents:")
-            print(len(header))
-            print(header)
         else:
              header = self.recvall(16) 
             
         messageSize = self.get_msg_size(header)
         print("Message size is {0}".format(messageSize))
         messageBytes = self.recvall(messageSize)
-        print("Received all {0} bytes".format(messageSize))
-        print(messageBytes)
         
         if decrypt:
-            print("Decrypting message")
             messageBytes = self.decrypt(messageBytes)
-            print("Done. Contents:")
-            print(len(messageBytes))
-            print(messageBytes)
         
         message = pickle.loads(messageBytes)
         return message
@@ -146,14 +111,6 @@ class SecureSocket:
             self._socket.close()
         except:
             print("Error closing socket", file=sys.stderr)
-
-
-class Encryptor:
-    def __init__(self):
-        """ constructor for Encryptor """
-
-    def __del__(self):
-        """ destructor for Encryptor """
 
 
 class MessageError(Exception):
