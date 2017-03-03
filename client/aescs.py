@@ -1,49 +1,70 @@
+import base64
 from Crypto.Cipher import AES
-
 
 class AESCipher:
     def __init__(self, key, iv):
-        self._bs = AES.block_size
+        self._bs = 16
         self._key = key
         self._iv = iv
         
     def init_suites(self):
         if self._key and self._iv:
-            self._cs = AES.new(self._key, AES.MODE_CBC, self._iv)
+            self._ecs = AES.new(self._key, AES.MODE_CBC, self._iv)
+            self._dcs = AES.new(self._key, AES.MODE_CBC, self._iv)
     
     def encrypt(self, plain_text):
-        print("Plain Text:")
+        print("---------------------------")
+        
+        print("raw:")
         print(len(plain_text))
         print(plain_text)
-        
-        p_plain_text = self._pad(plain_text)
-        print("Padded Plain Text:")
+
+        b64_plain_text = base64.b64encode(plain_text)
+        print("raw after base64 encoding")
+        print(len(b64_plain_text))
+        print(b64_plain_text)
+                
+        p_plain_text = self._pad(b64_plain_text)
+        print("Padded b64 raw:")
         print(len(p_plain_text))
         print(p_plain_text)
         
-        print("Cipher Text:")
-        ct = self._cs.encrypt(plain_text)
+        print("Cipher text:")
+        ct = self._ecs.encrypt(p_plain_text)
         print(len(ct))
         print(ct)
 
-        print("Decrypted and unpadded Cipher Text:")
-        pt = self._cs.decrypt(ct)
-        upt = self._unpad(pt)
-        print(len(upt))
-        print(upt)
-        
+        print("---------------------------")        
+
         return ct
 
     def decrypt(self, cipher_text):
-        pt = self._cs.decrypt(cipher_text)
-        upt = self._unpad(pt)
-        print("Decrypt")
-        print(len(cipher_text))
+        print("DECRYPTION")
+
+        dct = self._dcs.decrypt(cipher_text)
+        upt = self._unpad(dct)
+        rb64t = base64.b64decode(upt)
+        print("Decrypted")
+
+        print("dct")
+        print(len(dct))
+        print(dct)
+
+        print("upt")
         print(len(upt))
-        return upt
+        print(upt)
+
+        print("rb64t")
+        print(len(rb64t))
+        print(rb64t)
+        
+        print("DONE DECRYPTION")
+        return rb64t
 
     def _pad(self, s):
-        return s + ((self._bs - len(s) % self._bs) * chr(self._bs - len(s) % self._bs))
+        length = 16 - (len(s) % 16)
+        s += bytes([length])*length
+        return s
 
     @staticmethod
     def _unpad(s):

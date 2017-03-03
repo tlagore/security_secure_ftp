@@ -28,16 +28,37 @@ class SecureSocket:
     def send_message(self, message, encrypt):
         """ breaks message into 16 byte chunks and sends them decrypted """
         messageBytes = pickle.dumps(message)
+        
+        print("Message data after serialization:")
+        print(messageBytes)
+        print(len(messageBytes))
+        
         messageLen = len(messageBytes)
         header = struct.pack("IIII", messageLen, messageLen, messageLen, messageLen)
 
+        print("Header for Message:")
+        print(header)
+        print(len(header))
+        
         if encrypt:
             header = self.encrypt(header)
             messageBytes = self.encrypt(messageBytes)
-        
-        self._socket.sendall(self.encrypt(header))
-        self._socket.sendall(self.encrypt(messageBytes))
+            print("Data is encrypted")
+            print("header cipher:")
+            print(len(header))
+            print(header)
+            print("message cipher:")
+            print(len(message))
+            print(message)
 
+        print("Sending data")
+        print("Attempting to send header")
+        self._socket.sendall(self.encrypt(header))
+        print("header sent")
+        print("attempting to send message")
+        self._socket.sendall(self.encrypt(messageBytes))
+        print("message sent")
+        
     def recv_message(self, decrypt=True):
         """ receives an encrypted message, decrypts it, and returns the message object """
         header = self.recvall(16)
@@ -71,22 +92,15 @@ class SecureSocket:
     def encrypt(self, data):
         """ encrypts the passed in data and returns the encrypted data """
         #TODO padding
-        print ('data to be encrypted: {0}'.format(data))
         if self._cipher != 'none':
-            print('Data is being encrypted')
-            print(bytes(data))
-            return self._aescs.encrypt(bytes(data))
-        print('No encryption')
+            return self._aescs.encrypt(data)
         return data
 
     def decrypt(self, data):
         """ decrypts the passed in data and returns the decrypted data """
         # TODO padding
-        print ('data to be encrypted: {0}'.format(data))
         if self._cipher != 'none':
-            print('Data is being decrypted')
             return self._aescs.decrypt(data)
-        print('No encryption')
         return data
 
     def set_cipher(self, cipher):

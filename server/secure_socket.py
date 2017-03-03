@@ -21,25 +21,44 @@ class SecureSocket:
         self._iv = iv
         self._aescs = AESCipher(key, iv)
         self._aescs.init_suites()
-
+        
     def init_aescs(self):
-        self._aescs.set_key(self._key)
-        self._aescs.set_iv(self._iv)
         self._aescs.init_suites()
         
     def send_message(self, message, encrypt):
         """ breaks message into 16 byte chunks and sends them decrypted """
         messageBytes = pickle.dumps(message)
+        
+        print("Message data after serialization:")
+        print(messageBytes)
+        print(len(messageBytes))
+
         messageLen = len(messageBytes)
         header = struct.pack("IIII", messageLen, messageLen, messageLen, messageLen)
 
+        print("Header for Message:")
+        print(header)
+        print(len(header))
+        
         if encrypt:
             header = self.encrypt(header)
             messageBytes = self.encrypt(messageBytes)
-        
-        self._socket.sendall(self.encrypt(header))
-        self._socket.sendall(self.encrypt(messageBytes))
+            print("Data is encrypted")
+            print("header cipher:")
+            print(len(header))
+            print(header)
+            print("message cipher:")
+            print(len(message))
+            print(message)
 
+        print("Sending data")
+        print("Attempting to send header")
+        self._socket.sendall(self.encrypt(header))
+        print("header sent")
+        print("attempting to send message")
+        self._socket.sendall(self.encrypt(messageBytes))
+        print("message sent")
+        
     def recv_message(self, decrypt=True):
         """ receives an encrypted message, decrypts it, and returns the message object """
         header = self.recvall(16)
@@ -72,12 +91,16 @@ class SecureSocket:
     
     def encrypt(self, data):
         """ encrypts the passed in data and returns the encrypted data """
-        # TODO: Encrypt the data...
+        #TODO padding
+        if self._cipher != 'none':
+            return self._aescs.encrypt(data)
         return data
 
     def decrypt(self, data):
         """ decrypts the passed in data and returns the decrypted data """
-        # TODO: Decrypt the data...
+        # TODO padding
+        if self._cipher != 'none':
+            return self._aescs.decrypt(data)
         return data
 
     def set_cipher(self, cipher):
@@ -133,7 +156,7 @@ class Message:
 
         if mPayload is None:
             raise MessageError("Object of type 'Message' cannot have an empty payload.")
-        
+
         self._type = mType
         self._cipher = mCipher
         self._payload = mPayload
