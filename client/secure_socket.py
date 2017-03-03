@@ -74,7 +74,8 @@ class SecureSocket:
         print ('data to be encrypted: {0}'.format(data))
         if self._cipher != 'none':
             print('Data is being encrypted')
-            return self._aescs.encrypt(data)
+            print(bytes(data))
+            return self._aescs.encrypt(bytes(data))
         print('No encryption')
         return data
 
@@ -83,7 +84,7 @@ class SecureSocket:
         # TODO padding
         print ('data to be encrypted: {0}'.format(data))
         if self._cipher != 'none':
-            print('Data is being encrypted')
+            print('Data is being decrypted')
             return self._aescs.decrypt(data)
         print('No encryption')
         return data
