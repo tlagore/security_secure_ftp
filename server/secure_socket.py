@@ -30,7 +30,7 @@ class SecureSocket:
         """ breaks message into 16 byte chunks and sends them decrypted """
         messageBytes = pickle.dumps(message)
         
-        if encrypt:
+        if encrypt and self._cipher != "none":
             messageBytes = self.encrypt(messageBytes)
 
             messageLen = len(messageBytes)
@@ -48,7 +48,7 @@ class SecureSocket:
     def recv_message(self, decrypt=True):
         """ receives an encrypted message, decrypts it, and returns the message object """
     
-        if decrypt:
+        if decrypt and self._cipher != "none":
             header = self.recvall(32) # encrypted header gets padding
             header = self.decrypt(header)
         else:
