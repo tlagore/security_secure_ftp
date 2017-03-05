@@ -39,10 +39,7 @@ class FTPClient:
 
     def worker(self):
         """ worker thread for ftp_client """
-        
         response = self.handshake()
-        
-        print("{0} {1}".format(response.type, response.payload))
         
         if response.payload == True:
             if self._command == "read":
@@ -50,20 +47,26 @@ class FTPClient:
             elif self._command == "write":
                 self.write()
         else:
-            print("!! Server denied connection. Received false confirmation after handshake")
+            print("!! Server denied connection.")
+            print("!! Server message: {0}".format(response.payload))
         
         
     def handshake(self):
         """ generates an initialization vector for the server waits for confirmation """
         message = Message(mType=MessageType.handshake, mPayload=self._iv, mCipher=self._cipher)
         self._socket.send_message(message, encrypt=False)
-        response = self._socket.recv_message(True)
-        print("Handshake complete")
+
+        ## Receive challenge, decrypt, add one, send back ##
+        challenge = self._socket.recv_raw(48, decrypt=True)
+        challenge = int.from_bytes(challenge, "big") + 1
+        self._socket.send_raw(challenge.to_bytes(32, "big"), encrypt=True)
+
+        ## Get server response ##
+        response = self._socket.recv_message(decrypt=False)
         return response
 
     def read(self):
         """ reads a file from the server"""
-        print("Read!")
         message = Message(mType=MessageType.read_file, mPayload=self._filename)
         self._socket.send_message(message, encrypt=True)
 
@@ -84,7 +87,6 @@ class FTPClient:
                           
     def write(self):
         """ attempts to write a file to server """
-        print("Write!")
         message = Message(mType=MessageType.write_file, mPayload=self._filename)
         self._socket.send_message(message, encrypt=True)
         
@@ -151,7 +153,7 @@ class FTPClient:
         except:
             print("Error closing socket")
         finally:
-            self.three_dots("Exitting")
+            self.three_dots("!! Exitting")
             
 
 class IPFormatError(Exception):

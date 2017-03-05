@@ -56,8 +56,7 @@ def main(args=None):
         except:
             print("!! Error: {0}".format(sys.exc_info()[1]))
             print(traceback.format_exc())
-        finally:
-            print("!! Exitting...")
+            
 
 def domain_resolution(host_port):
     """ 

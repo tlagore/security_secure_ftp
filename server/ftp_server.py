@@ -1,5 +1,6 @@
 import json
 import hashlib
+import os
 import pickle
 import random
 import re
@@ -49,12 +50,12 @@ class FTPServer:
             
     def _listen(self):
         """Listen for a client"""
+
         while True:
             self._socket.listen(5);
             (client, address) = self._socket.accept()
             clientThread = threading.Thread(target=self._worker, args=((client, address),))
             clientThread.start()
-
             
     def time_message(self, message):
         return datetime.now().strftime("!! %H:%M:%S: ") + message
@@ -70,20 +71,12 @@ class FTPServer:
             if socket:
                 print(self.time_message("--------------------------------------"))
                 message = socket.recv_message(decrypt=True)
-                self.type_switch(message, socket)
-                                
-            else:
-                print(self.time_message("Received bad client handshake"))
-            #self.recv_message(client)
-                #message = pickle.loads(client.recv(2048))
-                
-            #message = pickle.loads(client.recv(2048))
-
+                self.type_switch(message, socket)                                
         except (EOFError) as e:
             pass
         except:
-            print(self.time_message("{0}".format(traceback.format_exception(sys.exc_info()))))
-            print(self.time_message("!! Client disconnected"))
+            print(self.time_message("Error writing file: {0}".format(sys.exc_info()[1])))
+            print(self.time_message("!! Client disconnected: {0}".format(address[0])))
             
         print(self.time_message("Exitting worker"))
     
@@ -148,11 +141,25 @@ class FTPServer:
             socket = None
         else:
             socket.set_cipher(message.cipher)
-            socket.set_iv(message.payload)
             print(self.time_message("Cipher: {0}".format(message.cipher)))
+            socket.set_iv(message.payload)
             socket.init_aescs()
 
-            self.ack_client(socket, True)
+            print(self.time_message("Sending challenge."))
+            challenge = os.urandom(32)
+            socket.send_raw(challenge, encrypt=True)
+            response = socket.recv_raw(48, decrypt=True)
+            if int.from_bytes(challenge, "big") + 1 != int.from_bytes(response, "big"):
+                print(self.time_message("Client supplied bad response to challenge. Ending communication."))
+                response_message = Message(mType=MessageType.error, mPayload="Invalid secret key.")
+                socket.send_message(response_message, encrypt=False)
+                time.sleep(3)
+                socket.close()
+                socket = None
+            else:
+                response_message = Message(mType=MessageType.confirmation, mPayload=True)
+                socket.send_message(response_message, encrypt=False)
+                
         return socket
 
     def eprint(self, *args, **kwargs):

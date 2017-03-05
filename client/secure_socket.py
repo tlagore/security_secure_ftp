@@ -29,7 +29,7 @@ class SecureSocket:
     def send_message(self, message, encrypt):
         """ breaks message into 16 byte chunks and sends them decrypted """
         messageBytes = pickle.dumps(message)
-        
+
         if encrypt and self._cipher != "none":
             messageBytes = self.encrypt(messageBytes)
 
@@ -40,7 +40,7 @@ class SecureSocket:
         else:
             messageLen = len(messageBytes)
             header = struct.pack("IIII", messageLen, messageLen, messageLen, messageLen)
-
+            
         self._socket.sendall(header)
         self._socket.sendall(messageBytes)
 
@@ -55,7 +55,6 @@ class SecureSocket:
              header = self.recvall(16) 
             
         messageSize = self.get_msg_size(header)
-        print("Message size is {0}".format(messageSize))
         messageBytes = self.recvall(messageSize)
         
         if decrypt:
@@ -63,6 +62,23 @@ class SecureSocket:
         
         message = pickle.loads(messageBytes)
         return message
+
+    def send_raw(self, data, encrypt = True):
+        """ """
+        if encrypt and self._cipher != "none":
+            messageBytes = self.encrypt(data)
+
+        self._socket.sendall(messageBytes)
+
+
+    def recv_raw(self, amount, decrypt = True):
+        """ """
+        messageBytes = self.recvall(amount)
+
+        if decrypt and self._cipher != "none":
+            messageBytes = self.decrypt(messageBytes)
+
+        return messageBytes
 
     def get_msg_size(self, header):
         """ unpacks header information and returns the length of the message """

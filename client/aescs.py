@@ -11,7 +11,7 @@ class AESCipher:
             self._ready = True
         
     def init_suites(self):
-        print("init cipher suites: key = {0}, iv = {1}".format(self._key, self._iv))
+        ''' inits the AES suites '''
         if self._key and self._iv:
             self._ecs = AES.new(self._key, AES.MODE_CBC, self._iv)
             self._dcs = AES.new(self._key, AES.MODE_CBC, self._iv)
