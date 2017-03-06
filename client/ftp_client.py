@@ -34,8 +34,7 @@ class FTPClient:
         sock.connect((host, port))
         self._socket = SecureSocket(sock, cipher, key, self._iv)        
         self.worker()
-
-        time.sleep(3)
+        
 
     def worker(self):
         """ worker thread for ftp_client """
@@ -53,14 +52,14 @@ class FTPClient:
         
     def handshake(self):
         """ generates an initialization vector for the server waits for confirmation """
-        message = Message(mType=MessageType.handshake, mPayload=self._iv, mCipher=self._cipher)
-        self._socket.send_message(message, encrypt=False)
-
-        ## Receive challenge, decrypt, add one, send back ##
-        challenge = self._socket.recv_raw(48, decrypt=True)
-        challenge = int.from_bytes(challenge, "big") + 1
-        self._socket.send_raw(challenge.to_bytes(32, "big"), encrypt=True)
         try:
+            message = Message(mType=MessageType.handshake, mPayload=self._iv, mCipher=self._cipher)
+            self._socket.send_message(message, encrypt=False)
+
+            ## Receive challenge, decrypt, add one, send back ##
+            challenge = self._socket.recv_raw(48, decrypt=True)
+            challenge = int.from_bytes(challenge, "big") + 1
+            self._socket.send_raw(challenge.to_bytes(32, "big"), encrypt=True)
             ## Get server response ##
             response = self._socket.recv_message(decrypt=True)
             return response

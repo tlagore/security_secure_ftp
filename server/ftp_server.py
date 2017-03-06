@@ -75,8 +75,7 @@ class FTPServer:
         except (EOFError) as e:
             pass
         except:
-            print(self.time_message("Error writing file: {0}".format(sys.exc_info()[1])))
-            print(self.time_message("!! Client disconnected: {0}".format(address[0])))
+            print(self.time_message("Client disconnected: {0}".format(address[0])))
             
         print(self.time_message("Exitting worker"))
     
@@ -135,29 +134,32 @@ class FTPServer:
         """ receives a handshake from the client containing cipher and iv """
         socket = SecureSocket(client, None, self._key, None)
         message = socket.recv_message(decrypt=False)
-
-        if message.cipher != "aes256" and message.cipher != "aes128" and message.cipher != "none":
-            self.ack_client(socket, False)
-            socket = None
-        else:
-            socket.set_cipher(message.cipher)
-            print(self.time_message("Cipher: {0}".format(message.cipher)))
-            socket.set_iv(message.payload)
-            socket.init_aescs()
-
-            print(self.time_message("Sending challenge."))
-            challenge = os.urandom(32)
-            socket.send_raw(challenge, encrypt=True)
-            response = socket.recv_raw(48, decrypt=True)
-            if int.from_bytes(challenge, "big") + 1 != int.from_bytes(response, "big"):
-                print(self.time_message("Client supplied bad response to challenge. Ending communication."))
-                time.sleep(1)
-                socket.close()
+        try:
+            if message.cipher != "aes256" and message.cipher != "aes128" and message.cipher != "none":
+                self.ack_client(socket, False)
                 socket = None
             else:
-                response_message = Message(mType=MessageType.confirmation, mPayload=True)
-                socket.send_message(response_message, encrypt=True)
-                
+                socket.set_cipher(message.cipher)
+                print(self.time_message("Cipher: {0}".format(message.cipher)))
+                socket.set_iv(message.payload)
+                socket.init_aescs()
+
+                print(self.time_message("Sending challenge."))
+                challenge = os.urandom(32)
+                socket.send_raw(challenge, encrypt=True)
+                response = socket.recv_raw(48, decrypt=True)
+                if int.from_bytes(challenge, "big") + 1 != int.from_bytes(response, "big"):
+                    print(self.time_message("Client supplied bad response to challenge. Ending communication."))
+                    time.sleep(1)
+                    socket.close()
+                    socket = None
+                else:
+                    response_message = Message(mType=MessageType.confirmation, mPayload=True)
+                    socket.send_message(response_message, encrypt=True)
+        except:
+            print(self.time_message("Client could not decrypt challenge. Ending communication."))
+            socket = None
+            
         return socket
 
     def eprint(self, *args, **kwargs):
@@ -177,7 +179,7 @@ class FTPServer:
                 
     def ack_client(self, client, ack):
         """ 
-        ack_client generates a confirmation message for the client with specified ack
+        ack_generates a confirmation message for the client with specified ack
         and sends the response to the client.
 
         ack is expected to be a boolean value (True/False)
