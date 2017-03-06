@@ -110,16 +110,24 @@ class FTPServer:
         print(self.time_message("Client requested to write filename: {0}".format(filename)))
 
         try:
+            md5_check = hashlib.md5()
             with open(filename, 'wb') as fd:
+                print("acking client...")
                 self.ack_client(client, True)
 
                 message = client.recv_message(decrypt=True)
                 while message.type != MessageType.eof:
+                    md5_check.update(message.payload)
                     fd.write(message.payload)
                     message = client.recv_message(decrypt=True)
 
-                self.ack_client(client, True)
-                print(self.time_message("Wrote {0} to file.".format(filename)))
+
+                if message.payload != md5_check.digest():
+                    response = Message(mType=MessageType.error, payload="Checksum on file did not match.")
+                    client.send_message(response, encrypt=True)
+                else:
+                    self.ack_client(client, True)
+                    print(self.time_message("Wrote {0} to file.".format(filename)))
         except Exception as ex:
             self.send_error(client, "Error writing file: {0}".format(sys.exc_info()[1]))
 

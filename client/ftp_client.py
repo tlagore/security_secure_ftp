@@ -1,4 +1,4 @@
-from getpass import getpass
+import hashlib
 import os
 import pickle
 import platform
@@ -93,16 +93,19 @@ class FTPClient:
         
         response = self._socket.recv_message(decrypt=True)
 
+        md5_check = hashlib.md5()
         if response.payload == True:
             with open(self._filename, "rb") as fd:
                 intxt = fd.read(1024)
                 while intxt != b'':
+                    md5_check.update(intxt)
                     message = Message(mType=MessageType.write_file, mPayload=intxt)
                     self._socket.send_message(message, encrypt=True)
                     intxt = fd.read(1024)
 
-            message = Message(mType=MessageType.eof, mPayload=True)
+            message = Message(mType=MessageType.eof, mPayload=md5_check.digest())
             self._socket.send_message(message, encrypt=True)
+
             response = self._socket.recv_message(decrypt=True)
             
             if response.payload == True:
