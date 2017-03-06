@@ -48,7 +48,7 @@ class FTPClient:
                 self.write()
         else:
             print("!! Server denied connection.")
-            print("!! Server message: {0}".format(response.payload))
+            print("!! {0}".format(response.payload))
         
         
     def handshake(self):
@@ -60,10 +60,12 @@ class FTPClient:
         challenge = self._socket.recv_raw(48, decrypt=True)
         challenge = int.from_bytes(challenge, "big") + 1
         self._socket.send_raw(challenge.to_bytes(32, "big"), encrypt=True)
-
-        ## Get server response ##
-        response = self._socket.recv_message(decrypt=False)
-        return response
+        try:
+            ## Get server response ##
+            response = self._socket.recv_message(decrypt=True)
+            return response
+        except:
+            return Message(mType=MessageType.error, mPayload = "Invalid Key.")
 
     def read(self):
         """ reads a file from the server"""

@@ -151,14 +151,12 @@ class FTPServer:
             response = socket.recv_raw(48, decrypt=True)
             if int.from_bytes(challenge, "big") + 1 != int.from_bytes(response, "big"):
                 print(self.time_message("Client supplied bad response to challenge. Ending communication."))
-                response_message = Message(mType=MessageType.error, mPayload="Invalid secret key.")
-                socket.send_message(response_message, encrypt=False)
-                time.sleep(3)
+                time.sleep(1)
                 socket.close()
                 socket = None
             else:
                 response_message = Message(mType=MessageType.confirmation, mPayload=True)
-                socket.send_message(response_message, encrypt=False)
+                socket.send_message(response_message, encrypt=True)
                 
         return socket
 
