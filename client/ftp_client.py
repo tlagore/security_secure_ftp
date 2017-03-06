@@ -56,15 +56,20 @@ class FTPClient:
             message = Message(mType=MessageType.handshake, mPayload=self._iv, mCipher=self._cipher)
             self._socket.send_message(message, encrypt=False)
 
-            ## Receive challenge, decrypt, add one, send back ##
-            challenge = self._socket.recv_raw(48, decrypt=True)
-            challenge = int.from_bytes(challenge, "big") + 1
-            self._socket.send_raw(challenge.to_bytes(32, "big"), encrypt=True)
-            ## Get server response ##
-            response = self._socket.recv_message(decrypt=True)
-            return response
+            if self._cipher != "none":
+                ## Receive challenge, decrypt, add one, send back ##
+                challenge = self._socket.recv_raw(48, decrypt=True)
+                challenge = int.from_bytes(challenge, "big") + 1
+                self._socket.send_raw(challenge.to_bytes(32, "big"), encrypt=True)
+                ## Get server response ##
+                response = self._socket.recv_message(decrypt=True)
+                return response
+            else:
+                response = self._socket.recv_message(decrypt=True)
+                return response
         except:
             return Message(mType=MessageType.error, mPayload = "Invalid Key.")
+        
 
     def read(self):
         """ reads a file from the server"""

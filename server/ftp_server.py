@@ -1,17 +1,13 @@
-import json
 import hashlib
 import os
 import pickle
-import random
 import re
 import socket
 import threading
 import time
-import traceback
 import sys
 
 from datetime import datetime
-from multiprocessing.connection import Listener
 
 from secure_socket import Message, MessageType, SecureSocket
 
@@ -112,7 +108,6 @@ class FTPServer:
         try:
             md5_check = hashlib.md5()
             with open(filename, 'wb') as fd:
-                print("acking client...")
                 self.ack_client(client, True)
 
                 message = client.recv_message(decrypt=True)
@@ -121,11 +116,12 @@ class FTPServer:
                     fd.write(message.payload)
                     message = client.recv_message(decrypt=True)
 
-
                 if message.payload != md5_check.digest():
+                    print(self.time_message("File transfer rejected. Checksum mismatch. Expected: {0} Received: {1}".format(message.payload, md5_check.digest())))
                     response = Message(mType=MessageType.error, payload="Checksum on file did not match.")
                     client.send_message(response, encrypt=True)
                 else:
+                    print(self.time_message("File confirmed, checksum: {0}".format(md5_check.digest())))
                     self.ack_client(client, True)
                     print(self.time_message("Wrote {0} to file.".format(filename)))
         except Exception as ex:
@@ -152,18 +148,23 @@ class FTPServer:
                 socket.set_iv(message.payload)
                 socket.init_aescs()
 
-                print(self.time_message("Sending challenge."))
-                challenge = os.urandom(32)
-                socket.send_raw(challenge, encrypt=True)
-                response = socket.recv_raw(48, decrypt=True)
-                if int.from_bytes(challenge, "big") + 1 != int.from_bytes(response, "big"):
-                    print(self.time_message("Client supplied bad response to challenge. Ending communication."))
-                    time.sleep(1)
-                    socket.close()
-                    socket = None
+                if message.cipher != "none":
+                    print(self.time_message("Sending challenge."))
+                    challenge = os.urandom(32)
+                    socket.send_raw(challenge, encrypt=True)
+                    response = socket.recv_raw(48, decrypt=True)
+                    if int.from_bytes(challenge, "big") + 1 != int.from_bytes(response, "big"):
+                        print(self.time_message("Client supplied bad response to challenge. Ending communication."))
+                        time.sleep(1)
+                        socket.close()
+                        socket = None
+                    else:
+                        self.ack_client(socket, True)
+                        #response_message = Message(mType=MessageType.confirmation, mPayload=True)
+                        #socket.send_message(response_message, encrypt=True)
                 else:
-                    response_message = Message(mType=MessageType.confirmation, mPayload=True)
-                    socket.send_message(response_message, encrypt=True)
+                    self.ack_client(socket, True)
+                    
         except:
             print(self.time_message("Client could not decrypt challenge. Ending communication."))
             socket = None
@@ -173,17 +174,6 @@ class FTPServer:
     def eprint(self, *args, **kwargs):
         print(*args, file=sys.stderr, **kwargs)
         
-    def read_message(self, message):
-        """Read message from client"""
-        return
-
-    def encrypt(self, data):
-        """ encrypts data and returns it """
-        return data
-
-    def decrypt(self, data):
-        """ decrypts data and returns it """
-        return data
                 
     def ack_client(self, client, ack):
         """ 
