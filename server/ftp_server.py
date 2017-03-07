@@ -73,7 +73,7 @@ class FTPServer:
         except:
             print(self.time_message("Client disconnected: {0}".format(address[0])))
             
-        print(self.time_message("Exitting worker"))
+        print(self.time_message("Done"))
     
     def type_switch(self, msg, client):
         if msg.type == MessageType.write_file:
@@ -88,16 +88,19 @@ class FTPServer:
         print(self.time_message("Client requesting filename: {0}".format(filename)))
 
         try:
+            md5_check = hashlib.md5()
             with open(filename, 'rb') as fd:
                 self.ack_client(client, True)
                 intxt = fd.read(1024)
                 while intxt != b'':
+                    md5_check.update(intxt)
                     message = Message(mType=MessageType.write_file, mPayload=intxt)
                     client.send_message(message, encrypt=True)
                     intxt = fd.read(1024)
 
-            message = Message(mType=MessageType.eof, mPayload=True)
+            message = Message(mType=MessageType.eof, mPayload=md5_check.digest())
             client.send_message(message, encrypt=True)
+            print(self.time_message("Finished sending file."))
         except Exception as ex:
             self.send_error(client, "Error writing file: {0}".format(sys.exc_info()[1]))
 

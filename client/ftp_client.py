@@ -15,13 +15,13 @@ class FTPClient:
 
     def __init__(self, host, port, command, filename, cipher, key):
         """constructor for chat client"""
-        print("!! Client starting. Arguments: ".format(host, port))
-        print("!! \thost: {0}".format(host))
-        print("!! \tport: {0}".format(port))
-        print("!! \tcommand: {0}".format(command))
-        print("!! \tfilename: {0}".format(filename))
-        print("!! \tcipher: {0}".format(cipher))
-        print("!! \tkey: {0}".format(key))
+        self.eprint("!! Client starting. Arguments: ".format(host, port))
+        self.eprint("!! \thost: {0}".format(host))
+        self.eprint("!! \tport: {0}".format(port))
+        self.eprint("!! \tcommand: {0}".format(command))
+        self.eprint("!! \tfilename: {0}".format(filename))
+        self.eprint("!! \tcipher: {0}".format(cipher))
+        self.eprint("!! \tkey: {0}".format(key))
 
         self._host = host
         self._port = port
@@ -46,8 +46,8 @@ class FTPClient:
             elif self._command == "write":
                 self.write()
         else:
-            print("!! Server denied connection.")
-            print("!! {0}".format(response.payload))
+            self.eprint("!! Server denied connection.")
+            self.eprint("!! {0}".format(response.payload))
         
         
     def handshake(self):
@@ -79,16 +79,26 @@ class FTPClient:
         response = self._socket.recv_message(decrypt=True)
 
         if response.payload == True:
+            md5_check = hashlib.md5()
             response = self._socket.recv_message(decrypt=True)
             while response.type != MessageType.eof and response.type != MessageType.error:
-                print(response.payload)
+                md5_check.update(response.payload)
+                try:
+                    print(response.payload.decode())
+                except:
+                    sys.stdout.buffer.write(response.payload)
                 response = self._socket.recv_message(decrypt=True)
-            
+
+            if md5_check.digest() != response.payload:
+                self.eprint("File transfer rejected. Checksum mismatch. Expected: {0} Received: {1}".format(response.payload, md5_check.digest()))
+            else:
+                self.eprint("!! File confirmed. checksum {0}:".format(response.payload))
+                
         else:    
-            print("!! Server rejected read command")
+            self.eprint("!! Server rejected read command")
 
         if response.type == MessageType.error:
-            print("!! {0}" + response.payload)
+            self.eprint("!! {0}" + response.payload)
 
                           
     def write(self):
@@ -114,14 +124,14 @@ class FTPClient:
             response = self._socket.recv_message(decrypt=True)
             
             if response.payload == True:
-                print("!! Finished writing {0} to server".format(self._filename))
+                self.eprint("!! Finished writing {0} to server".format(self._filename))
             else:
-                print("!! Server indicated an error in writing file")
+                self.eprint("!! Server indicated an error in writing file")
         else:
             if response.type == MessageType.error:
-                print("{0}".format(response.payload))
+                self.eprint("{0}".format(response.payload))
                 
-            print("!! Server rejected write command")
+            self.eprint("!! Server rejected write command")
             
                                 
     def gen_nonce(self):
@@ -131,25 +141,24 @@ class FTPClient:
     def eprint(self, *args, **kwargs):
         print(*args, file=sys.stderr, **kwargs)
 
-    @staticmethod
-    def three_dots(message):
+    def three_dots(self, message):
         """ prints 3 dots with a .5 second delay between each dot """
         print(message, end='')
         sys.stdout.flush()
         
         for i in range(0,3):
-            print('.', end='')
-            sys.stdout.flush()
+            self.eprint('.', end='')
+            sys.stderr.flush()
             time.sleep(0.5)
 
-        print()
+        self.eprint()
 
 
     def clear_screen(self):
         """ clears the console based on the operating system """
         os_sys = platform.system()
 
-        print("clear screen")
+        self.eprint("clear screen")
         if os_sys == "Linux":
             os.system('clear')
         else:
@@ -160,7 +169,7 @@ class FTPClient:
         try:
             self._socket.close()
         except:
-            print("Error closing socket")
+            self.eprint("Error closing socket")
         finally:
             self.three_dots("!! Exitting")
             
