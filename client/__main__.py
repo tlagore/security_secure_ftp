@@ -37,10 +37,10 @@ def main(args=None):
             # raise exception, key needs to be set if cipher is not none                
             if cipher != "none" and key is None:
                 raise Exception("key must be specified if cipher is not equal to 'none'")
-            elif cipher == "aes256" and len(key) != 32:
-                raise Exception("key must be 32 bytes if cipher is 'aes256'")
-            elif cipher == "aes128" and len(key) != 16:
-                raise Exception("key must be 16 bytes if cipher is 'aes128'")                 
+            #elif cipher == "aes256" and len(key) != 32:
+             #   raise Exception("key must be 32 bytes if cipher is 'aes256'")
+            #elif cipher == "aes128" and len(key) != 16:
+             #   raise Exception("key must be 16 bytes if cipher is 'aes128'")                 
     
             (host_ip, port) = domain_resolution(host_port)
             client = FTPClient(host_ip, port, command, filename, cipher, key)   

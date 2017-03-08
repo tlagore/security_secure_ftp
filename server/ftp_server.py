@@ -2,6 +2,8 @@ import hashlib
 import os
 import pickle
 import re
+import random
+import string
 import socket
 import threading
 import time
@@ -18,7 +20,11 @@ class FTPServer:
         """Constructor"""
         self._port = args[0]
         if len(args) == 2:
-            self._key = args[1]
+            if args[1] is None:
+                self._key = self.gen_key()
+            else:
+                self._key = args[1]
+            
         self._socket = 0
         
     def start_server(self):
@@ -147,6 +153,12 @@ class FTPServer:
                 socket = None
             else:
                 socket.set_cipher(message.cipher)
+
+                self._key = self.stretch_key_s(message.cipher, self._key)
+
+                #now set the key for our socket
+                socket.set_key(self._key)
+
                 print(self.time_message("Cipher: {0}".format(message.cipher)))
                 socket.set_iv(message.payload)
                 socket.init_aescs()
@@ -176,8 +188,30 @@ class FTPServer:
 
     def eprint(self, *args, **kwargs):
         print(*args, file=sys.stderr, **kwargs)
+
+    def gen_key(self):
+        return''.join(random.SystemRandom().choice(string.ascii_uppercase + \
+                                                   string.digits) for _ in range(16))
+
+    def stretch_key_s(self, cipher, key):
+        if cipher == 'aes256':
+            fill = 32
+        elif cipher == 'aes128':
+            fill = 16
+        else:
+            return key # nothing to change
         
-                
+        orig_key = key
+        length = len(key)
+        stretch = fill - length
+        if stretch > 0:
+            mod = stretch % length
+            div = int(stretch / length)
+            for x in range(0,div):
+                key += orig_key
+            key += key[:(mod)]
+        return key
+        
     def ack_client(self, client, ack):
         """ 
         ack_generates a confirmation message for the client with specified ack

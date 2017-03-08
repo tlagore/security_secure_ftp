@@ -32,7 +32,10 @@ class FTPClient:
         
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect((host, port))
-        self._socket = SecureSocket(sock, cipher, key, self._iv)        
+        
+        skey = self.stretch_key_c(cipher, key) #stretch the key
+
+        self._socket = SecureSocket(sock, cipher, skey, self._iv)        
         self.worker()
         
 
@@ -140,6 +143,25 @@ class FTPClient:
 
     def eprint(self, *args, **kwargs):
         print(*args, file=sys.stderr, **kwargs)
+
+    def stretch_key_c(self, cipher, key):
+        if cipher == 'aes256':
+            fill = 32
+        elif cipher == 'aes128':
+            fill = 16
+        else:
+            return key # nothing to change
+
+        orig_key = key
+        length = len(key)
+        stretch = fill - length
+        if stretch > 0:
+            mod = stretch % length
+            div = int(stretch / length)
+            for x in range(0,div):
+                key += orig_key
+            key += key[:(mod)]
+        return key
 
     def three_dots(self, message):
         """ prints 3 dots with a .5 second delay between each dot """

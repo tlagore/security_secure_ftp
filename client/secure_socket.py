@@ -105,7 +105,7 @@ class SecureSocket:
         if self._cipher != 'none':
             return self._aescs.decrypt(data)
         return data
-
+    
     def set_cipher(self, cipher):
         self._cipher = cipher
 
