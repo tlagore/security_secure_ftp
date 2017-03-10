@@ -114,27 +114,31 @@ class FTPServer:
         """ handles a client attempting to write to server """
         print(self.time_message("Client requested to write filename: {0}".format(filename)))
 
-        try:
-            md5_check = hashlib.md5()
-            with open(filename, 'wb') as fd:
-                self.ack_client(client, True)
-
-                message = client.recv_message(decrypt=True)
-                while message.type != MessageType.eof:
-                    md5_check.update(message.payload)
-                    fd.write(message.payload)
-                    message = client.recv_message(decrypt=True)
-
-                if message.payload != md5_check.digest():
-                    print(self.time_message("File transfer rejected. Checksum mismatch. Expected: {0} Received: {1}".format(message.payload, md5_check.digest())))
-                    response = Message(mType=MessageType.error, payload="Checksum on file did not match.")
-                    client.send_message(response, encrypt=True)
-                else:
-                    print(self.time_message("File confirmed, checksum: {0}".format(md5_check.digest())))
+        if re.search(r'\\|/', filename):
+            print(self.time_message("Bad filename requested. Ending communication."))
+            self.send_error(client, "Error writing file. Bad filename requested.")
+        else:        
+            try:
+                md5_check = hashlib.md5()
+                with open(filename, 'wb') as fd:
                     self.ack_client(client, True)
-                    print(self.time_message("Wrote {0} to file.".format(filename)))
-        except Exception as ex:
-            self.send_error(client, "Error writing file: {0}".format(sys.exc_info()[1]))
+
+                    message = client.recv_message(decrypt=True)
+                    while message.type != MessageType.eof:
+                        md5_check.update(message.payload)
+                        fd.write(message.payload)
+                        message = client.recv_message(decrypt=True)
+
+                        if message.payload != md5_check.digest():
+                            print(self.time_message("File transfer rejected. Checksum mismatch. Expected: {0} Received: {1}".format(message.payload, md5_check.digest())))
+                            response = Message(mType=MessageType.error, payload="Checksum on file did not match.")
+                            client.send_message(response, encrypt=True)
+                        else:
+                            print(self.time_message("File confirmed, checksum: {0}".format(md5_check.digest())))
+                            self.ack_client(client, True)
+                            print(self.time_message("Wrote {0} to file.".format(filename)))
+            except Exception as ex:
+                self.send_error(client, "Error writing file: {0}".format(sys.exc_info()[1]))
 
     def send_error(self, client, error):
         """ send error to client """
