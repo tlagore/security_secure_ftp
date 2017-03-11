@@ -1,0 +1,259 @@
+!! Client starting. Arguments: 
+!! 	host: 172.19.2.103
+!! 	port: 8888
+!! 	command: write
+!! 	filename: 1KB.bin
+!! 	cipher: none
+!! 	key: None
+!! Finished writing 1KB.bin to server
+
+real	0m0.186s
+user	0m0.038s
+sys	0m0.006s
+!! Client starting. Arguments: 
+!! 	host: 172.19.2.103
+!! 	port: 8888
+!! 	command: write
+!! 	filename: 1KB.bin
+!! 	cipher: aes128
+!! 	key: helloworldhellow
+!! Finished writing 1KB.bin to server
+
+real	0m0.231s
+user	0m0.037s
+sys	0m0.008s
+!! Client starting. Arguments: 
+!! 	host: 172.19.2.103
+!! 	port: 8888
+!! 	command: write
+!! 	filename: 1KB.bin
+!! 	cipher: aes256
+!! 	key: helloworldhellow
+!! Finished writing 1KB.bin to server
+
+real	0m0.234s
+user	0m0.039s
+sys	0m0.006s
+!! Client starting. Arguments: 
+!! 	host: 172.19.2.103
+!! 	port: 8888
+!! 	command: write
+!! 	filename: 1KB.bin
+!! 	cipher: none
+!! 	key: None
+!! Finished writing 1KB.bin to server
+
+real	0m0.192s
+user	0m0.040s
+sys	0m0.006s
+!! Client starting. Arguments: 
+!! 	host: 172.19.2.103
+!! 	port: 8888
+!! 	command: write
+!! 	filename: 1MB.bin
+!! 	cipher: aes128
+!! 	key: helloworldhellow
+!! Server denied connection.
+!! Invalid Key.
+
+real	0m1.056s
+user	0m0.038s
+sys	0m0.008s
+!! Client starting. Arguments: 
+!! 	host: 172.19.2.103
+!! 	port: 8888
+!! 	command: write
+!! 	filename: 1MB.bin
+!! 	cipher: aes256
+!! 	key: helloworldhellow
+!! Finished writing 1MB.bin to server
+
+real	0m0.234s
+user	0m0.039s
+sys	0m0.010s
+!! Client starting. Arguments: 
+!! 	host: 172.19.2.103
+!! 	port: 8888
+!! 	command: read
+!! 	filename: 1KB.bin
+!! 	cipher: none
+!! 	key: None
+!! File confirmed. checksum b'\xd4\x1d\x8c\xd9\x8f\x00\xb2\x04\xe9\x80\t\x98\xec\xf8B~':
+
+real	0m0.096s
+user	0m0.037s
+sys	0m0.010s
+!! Client starting. Arguments: 
+!! 	host: 172.19.2.103
+!! 	port: 8888
+!! 	command: read
+!! 	filename: 1KB.bin
+!! 	cipher: aes128
+!! 	key: helloworldhellow
+!! Server denied connection.
+!! Invalid Key.
+
+real	0m0.052s
+user	0m0.032s
+sys	0m0.012s
+!! Client starting. Arguments: 
+!! 	host: 172.19.2.103
+!! 	port: 8888
+!! 	command: read
+!! 	filename: 1KB.bin
+!! 	cipher: aes128
+!! 	key: helloworldhellow
+!! Server denied connection.
+!! Invalid Key.
+
+real	0m1.074s
+user	0m0.038s
+sys	0m0.007s
+!! Client starting. Arguments: 
+!! 	host: 172.19.2.103
+!! 	port: 8888
+!! 	command: read
+!! 	filename: 1KB.bin
+!! 	cipher: aes256
+!! 	key: helloworldhellow
+!! File confirmed. checksum b'\xd4\x1d\x8c\xd9\x8f\x00\xb2\x04\xe9\x80\t\x98\xec\xf8B~':
+
+real	0m0.145s
+user	0m0.036s
+sys	0m0.008s
+
+real	0m0.053s
+user	0m0.036s
+sys	0m0.009s
+!! Client starting. Arguments: 
+!! 	host: 172.19.2.103
+!! 	port: 8888
+!! 	command: read
+!! 	filename: 1MB.bin
+!! 	cipher: none
+!! 	key: None
+!! File confirmed. checksum b'\xd4\x1d\x8c\xd9\x8f\x00\xb2\x04\xe9\x80\t\x98\xec\xf8B~':
+
+real	0m0.096s
+user	0m0.038s
+sys	0m0.004s
+!! Client starting. Arguments: 
+!! 	host: 172.19.2.103
+!! 	port: 8888
+!! 	command: read
+!! 	filename: 1MB.bin
+!! 	cipher: aes128
+!! 	key: helloworldhellow
+!! Server denied connection.
+!! Invalid Key.
+
+real	0m0.054s
+user	0m0.038s
+sys	0m0.007s
+!! Client starting. Arguments: 
+!! 	host: 172.19.2.103
+!! 	port: 8888
+!! 	command: read
+!! 	filename: 1MB.bin
+!! 	cipher: aes256
+!! 	key: helloworldhellow
+!! File confirmed. checksum b'\xd4\x1d\x8c\xd9\x8f\x00\xb2\x04\xe9\x80\t\x98\xec\xf8B~':
+
+real	0m0.144s
+user	0m0.039s
+sys	0m0.007s
+cat: 1BG.bin: No such file or directory
+!! Client starting. Arguments: 
+!! 	host: 172.19.2.103
+!! 	port: 8888
+!! 	command: write
+!! 	filename: 1GB.bin
+!! 	cipher: none
+!! 	key: None
+!! Finished writing 1GB.bin to server
+
+real	0m0.184s
+user	0m0.039s
+sys	0m0.006s
+!! Client starting. Arguments: 
+!! 	host: 172.19.2.103
+!! 	port: 8888
+!! 	command: write
+!! 	filename: 1GB.bin
+!! 	cipher: none
+!! 	key: None
+!! Finished writing 1GB.bin to server
+!! Client starting. Arguments: 
+!! 	host: 172.19.2.103
+!! 	port: 8888
+!! 	command: write
+!! 	filename: 1GB.bin
+!! 	cipher: none
+!! 	key: None
+!! Finished writing 1GB.bin to server
+
+real	0m15.037s
+user	0m11.946s
+sys	0m1.975s
+!! Client starting. Arguments: 
+!! 	host: 172.19.2.103
+!! 	port: 8888
+!! 	command: write
+!! 	filename: 1GB.bin
+!! 	cipher: aes128
+!! 	key: helloworldhellow
+!! Server denied connection.
+!! Invalid Key.
+
+real	0m1.065s
+user	0m0.045s
+sys	0m0.003s
+!! Client starting. Arguments: 
+!! 	host: 172.19.2.103
+!! 	port: 8888
+!! 	command: write
+!! 	filename: 1GB.bin
+!! 	cipher: aes256
+!! 	key: helloworldhellow
+!! Finished writing 1GB.bin to server
+
+real	0m44.457s
+user	0m37.025s
+sys	0m3.854s
+!! Client starting. Arguments: 
+!! 	host: 172.19.2.103
+!! 	port: 8888
+!! 	command: read
+!! 	filename: 1GB.bin
+!! 	cipher: none
+!! 	key: None
+!! File confirmed. checksum b"\x02\x10V'\xad\x8f:\xf8\xc3\xda?\xd6\xaf\xb2\x02H":
+
+real	0m17.340s
+user	0m14.269s
+sys	0m1.476s
+!! Client starting. Arguments: 
+!! 	host: 172.19.2.103
+!! 	port: 8888
+!! 	command: read
+!! 	filename: 1GB.bin
+!! 	cipher: aes128
+!! 	key: helloworldhellow
+!! Server denied connection.
+!! Invalid Key.
+
+real	0m1.146s
+user	0m0.037s
+sys	0m0.074s
+!! Client starting. Arguments: 
+!! 	host: 172.19.2.103
+!! 	port: 8888
+!! 	command: read
+!! 	filename: 1GB.bin
+!! 	cipher: aes256
+!! 	key: helloworldhellow
+!! File confirmed. checksum b"\x02\x10V'\xad\x8f:\xf8\xc3\xda?\xd6\xaf\xb2\x02H":
+
+real	0m43.941s
+user	0m40.786s
+sys	0m2.262s
