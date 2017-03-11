@@ -187,9 +187,9 @@ class FTPServer:
 
                 if message.cipher != "none":
                     print(self.time_message("Sending challenge."))
-                    challenge = os.urandom(32)
+                    challenge = os.urandom(16)
                     socket.send_raw(challenge, encrypt=True)
-                    response = socket.recv_raw(48, decrypt=True)
+                    response = socket.recv_raw(32, decrypt=True)
 
                     '''
                     challenge2 = (int.from_bytes(challenge, "big") + 1).to_bytes(32, "big")
