@@ -119,8 +119,9 @@ class FTPServer:
             self.send_error(client, "Error writing file. Bad filename requested.")
         else:        
             try:
+                temp = self.gen_filename(12)
                 md5_check = hashlib.md5()
-                with open(filename, 'wb') as fd:
+                with open(temp, 'wb') as fd:
                     self.ack_client(client, True)
 
                     message = client.recv_message(decrypt=True)
@@ -129,17 +130,33 @@ class FTPServer:
                         fd.write(message.payload)
                         message = client.recv_message(decrypt=True)
 
-                        if message.payload != md5_check.digest():
-                            print(self.time_message("File transfer rejected. Checksum mismatch. Expected: {0} Received: {1}".format(message.payload, md5_check.digest())))
-                            response = Message(mType=MessageType.error, payload="Checksum on file did not match.")
-                            client.send_message(response, encrypt=True)
-                        else:
-                            print(self.time_message("File confirmed, checksum: {0}".format(md5_check.digest())))
-                            self.ack_client(client, True)
-                            print(self.time_message("Wrote {0} to file.".format(filename)))
+                if message.payload != md5_check.digest():
+                    print(self.time_message("File transfer rejected. Checksum mismatch. Expected: {0} Received: {1}".format(message.payload, md5_check.digest())))
+                    os.remove(temp)
+                    print(self.time_message("Deleted transfered information."))
+                    response = Message(mType=MessageType.error, mPayload="Checksum on file did not match.")
+                    client.send_message(response, encrypt=True)
+                else:
+
+                    # remove old file if it exists and rename temp file to new file name
+                    try:
+                        os.remove(filename)
+                    except:
+                        pass
+                        #do nothing
+                        
+                    os.rename(temp, filename)
+                        
+                    print(self.time_message("File confirmed, checksum: {0}".format(md5_check.digest())))
+                    self.ack_client(client, True)
+                    print(self.time_message("Wrote {0} to file.".format(filename)))
             except Exception as ex:
                 self.send_error(client, "Error writing file: {0}".format(sys.exc_info()[1]))
 
+    def gen_filename(self, size):
+        return''.join(random.SystemRandom().choice(string.ascii_uppercase + \
+                                                   string.digits) for _ in range(size))
+                
     def send_error(self, client, error):
         """ send error to client """
         self.eprint(self.time_message(error))

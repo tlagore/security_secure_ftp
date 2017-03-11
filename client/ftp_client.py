@@ -130,6 +130,7 @@ class FTPClient:
                 self.eprint("!! Finished writing {0} to server".format(self._filename))
             else:
                 self.eprint("!! Server indicated an error in writing file")
+                self.eprint("!! {0}".format(response.payload))
         else:
             if response.type == MessageType.error:
                 self.eprint("!! {0}".format(response.payload))
