@@ -181,6 +181,7 @@ class FTPServer:
                 socket.set_key(self._key)
 
                 print(self.time_message("Cipher: {0}".format(message.cipher)))
+                print(self.time_message("IV: {0}".format(message.payload)))
                 socket.set_iv(message.payload)
                 socket.init_aescs()
 
@@ -189,12 +190,31 @@ class FTPServer:
                     challenge = os.urandom(32)
                     socket.send_raw(challenge, encrypt=True)
                     response = socket.recv_raw(48, decrypt=True)
+
+                    '''
+                    challenge2 = (int.from_bytes(challenge, "big") + 1).to_bytes(32, "big")
+                    print(challenge2, "\n", response)
+                    good = True
+
+                    for idx, val in enumerate(challenge2):
+                        if response[idx] != challenge2[idx]:
+                            print(idx, ": ", response[idx],  "      ", challenge2[idx])
+                            good = False
+
+                    print(good)
+                    '''
+                    
+                    #print(challenge2 == response)
+                    
                     if int.from_bytes(challenge, "big") + 1 != int.from_bytes(response, "big"):
                         print(self.time_message("Client supplied bad response to challenge. Ending communication."))
+                       # print("Expected: {0}\nReceived: {0}".format(int.from_bytes(challenge, "big") + 1, int.from_bytes(response, "big")))
+                        #print((challenge, response))
                         time.sleep(1)
                         socket.close()
                         socket = None
                     else:
+                        print(self.time_message("Received good response. Initializing communication."))
                         self.ack_client(socket, True)
                         #response_message = Message(mType=MessageType.confirmation, mPayload=True)
                         #socket.send_message(response_message, encrypt=True)
@@ -203,6 +223,8 @@ class FTPServer:
                     
         except:
             print(self.time_message("Client could not decrypt challenge. Ending communication."))
+            #Testing purposes
+            print("{0}".format(sys.exc_info()[1]))
             socket = None
             
         return socket

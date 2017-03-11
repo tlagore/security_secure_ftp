@@ -47,7 +47,10 @@ class FTPClient:
             if self._command == "read":
                 self.read()
             elif self._command == "write":
-                self.write()
+                if sys.stdin.isatty():
+                    print("!! Improper usage, pipe file data into program using 'cat file.ext | python3 __main__.py [args]'")
+                else:
+                    self.write()
         else:
             self.eprint("!! Server denied connection.")
             self.eprint("!! {0}".format(response.payload))
@@ -136,11 +139,10 @@ class FTPClient:
                 self.eprint("!! {0}".format(response.payload))
                 
             self.eprint("!! Server rejected write command")
-            
                                 
     def gen_nonce(self):
         """ generates a nonce to synchronize with the server """
-        return os.urandom(16)                   
+        return os.urandom(16)
 
     def eprint(self, *args, **kwargs):
         print(*args, file=sys.stderr, **kwargs)
@@ -164,19 +166,6 @@ class FTPClient:
             key += key[:(mod)]
         return key
 
-    def three_dots(self, message):
-        """ prints 3 dots with a .5 second delay between each dot """
-        print(message, end='')
-        sys.stdout.flush()
-        
-        for i in range(0,3):
-            self.eprint('.', end='')
-            sys.stderr.flush()
-            time.sleep(0.5)
-
-        self.eprint()
-
-
     def clear_screen(self):
         """ clears the console based on the operating system """
         os_sys = platform.system()
@@ -192,10 +181,7 @@ class FTPClient:
         try:
             self._socket.close()
         except:
-            self.eprint("Error closing socket")
-        finally:
-            self.three_dots("!! Exitting")
-            
+            self.eprint("Error closing socket")     
 
 class IPFormatError(Exception):
     """custom exception to indicate an IP format error"""
