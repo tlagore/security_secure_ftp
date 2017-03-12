@@ -198,11 +198,12 @@ class FTPServer:
                 #now set the key for our socket
                 if message.cipher != "none":
                     socket.set_key(self.stretch_key_s(message.cipher, self._key))
+                    socket.set_iv(message.payload)
+                    socket.init_aescs()
 
                 print(self.time_message("Cipher: {0}".format(message.cipher)))
                 print(self.time_message("IV: {0}".format(message.payload)))
-                socket.set_iv(message.payload)
-                socket.init_aescs()
+
 
                 if message.cipher != "none":
                     print(self.time_message("Sending challenge..."))
