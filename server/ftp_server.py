@@ -186,7 +186,7 @@ class FTPServer:
         socket = SecureSocket(client, None, self._key, None)
         message = socket.recv_message(decrypt=False)
         try:
-            if message.cipher != "aes256" and message.cipher != "aes128" and message.cipher != "none":
+            if message.cipher == "none":
                 self.ack_client(socket, False)
                 socket = None
             else:
