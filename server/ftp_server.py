@@ -92,17 +92,29 @@ class FTPServer:
     def client_read(self, client, filename):
         """ handles a client attempting to read from the server  """
         print(self.time_message("Client requesting filename: {0}".format(filename)))
+        print(self.time_message("Processing..."))
 
         try:
             md5_check = hashlib.md5()
             with open(filename, 'rb') as fd:
                 self.ack_client(client, True)
+                size = os.stat(filename).st_size
+                total = 0
+                
                 intxt = fd.read(1024)
                 while intxt != b'':
+                    total += len(intxt)
                     md5_check.update(intxt)
                     message = Message(mType=MessageType.write_file, mPayload=intxt)
                     client.send_message(message, encrypt=True)
                     intxt = fd.read(1024)
+                    date = datetime.now().strftime("%H:%M:%S: ")
+                    print("\r!! {0}{1}%".format(date, round((total/size) *  100, 2)), end='')
+
+                print()
+
+            digest = ''.join('{:02x}'.format(x) for x in md5_check.digest())
+            print(self.time_message("File sent, checksum: {0}".format(digest)))
 
             message = Message(mType=MessageType.eof, mPayload=md5_check.digest())
             client.send_message(message, encrypt=True)
@@ -113,6 +125,7 @@ class FTPServer:
     def client_write(self, client, filename):
         """ handles a client attempting to write to server """
         print(self.time_message("Client requested to write filename: {0}".format(filename)))
+        print(self.time_message("Processing..."))
 
         if re.search(r'\\|/', filename):
             print(self.time_message("Bad filename requested. Ending communication."))
@@ -146,8 +159,10 @@ class FTPServer:
                         #do nothing
                         
                     os.rename(temp, filename)
-                        
-                    print(self.time_message("File confirmed, checksum: {0}".format(md5_check.digest())))
+
+
+                    digest = ''.join('{:02x}'.format(x) for x in md5_check.digest())
+                    print(self.time_message("File confirmed, checksum: {0}".format(digest)))
                     self.ack_client(client, True)
                     print(self.time_message("Wrote {0} to file.".format(filename)))
             except Exception as ex:

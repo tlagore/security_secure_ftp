@@ -85,6 +85,7 @@ class FTPClient:
         response = self._socket.recv_message(decrypt=True)
 
         if response.payload == True:
+            self.eprint("!! Receiving file...")
             md5_check = hashlib.md5()
             response = self._socket.recv_message(decrypt=True)
             while response.type != MessageType.eof and response.type != MessageType.error:
@@ -98,7 +99,8 @@ class FTPClient:
             if md5_check.digest() != response.payload:
                 self.eprint("File transfer rejected. Checksum mismatch. Expected: {0} Received: {1}".format(response.payload, md5_check.digest()))
             else:
-                self.eprint("!! File confirmed. checksum {0}:".format(response.payload))
+                digest = ''.join('{:02x}'.format(x) for x in md5_check.digest())
+                self.eprint("!! File confirmed, checksum: {0}".format(digest))
                 
         else:    
             self.eprint("!! Server rejected read command")
@@ -116,13 +118,22 @@ class FTPClient:
 
         md5_check = hashlib.md5()
         if response.payload == True:
-
+            self.eprint("!! Sending file...")
+            size = os.stat(self._filename).st_size
+            total = 0
             intxt = sys.stdin.buffer.read(1024)
             while intxt != b'':
+                total+= len(intxt)
                 md5_check.update(intxt)
                 message = Message(mType=MessageType.write_file, mPayload=intxt)
                 self._socket.send_message(message, encrypt=True)
                 intxt = sys.stdin.buffer.read(1024)
+                print("\r!! {0}%".format(round((total/size) * 100, 2)), end='')
+
+            print()
+
+            digest = ''.join('{:02x}'.format(x) for x in md5_check.digest())
+            print("!! File sent, checksum: {0}".format(digest))
 
             message = Message(mType=MessageType.eof, mPayload=md5_check.digest())
             self._socket.send_message(message, encrypt=True)
