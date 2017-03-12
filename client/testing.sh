@@ -41,8 +41,8 @@ echo "Testing 1GB write"
 
 #1GB read
 echo "Testing 1GB read"
-{ python3 __main__.py read 1GB.bin $1:$2 none > 1GB.bin; } 2>> $4
-{ python3 __main__.py read 1GB.bin $1:$2 aes128 $3 > 1GB.bin; } 2>> $4
-{ python3 __main__.py read 1GB.bin $1:$2 aes256 $3 > 1GB.bin; } 2>> $4
+{ time python3 __main__.py read 1GB.bin $1:$2 none > 1GB.bin; } 2>> $4
+{ time python3 __main__.py read 1GB.bin $1:$2 aes128 $3 > 1GB.bin; } 2>> $4
+{ time python3 __main__.py read 1GB.bin $1:$2 aes256 $3 > 1GB.bin; } 2>> $4
 
 echo "Test suite finished"

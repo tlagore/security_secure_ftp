@@ -6,9 +6,10 @@
 !! 	cipher: none
 !! 	key: None
 !! Sending file...
+!! File sent, checksum: 0e943635887f1d44fd7ddc51cff90847
 !! Finished writing 1KB.bin to server
 
-real	0m0.191s
+real	0m0.190s
 user	0m0.036s
 sys	0m0.007s
 !! Client starting. Arguments: 
@@ -19,11 +20,12 @@ sys	0m0.007s
 !! 	cipher: aes128
 !! 	key: notsosecret123
 !! Sending file...
+!! File sent, checksum: 0e943635887f1d44fd7ddc51cff90847
 !! Finished writing 1KB.bin to server
 
-real	0m0.188s
-user	0m0.037s
-sys	0m0.006s
+real	0m0.189s
+user	0m0.030s
+sys	0m0.013s
 !! Client starting. Arguments: 
 !! 	host: 172.19.1.45
 !! 	port: 8888
@@ -32,11 +34,12 @@ sys	0m0.006s
 !! 	cipher: aes256
 !! 	key: notsosecret123
 !! Sending file...
+!! File sent, checksum: 0e943635887f1d44fd7ddc51cff90847
 !! Finished writing 1KB.bin to server
 
-real	0m0.187s
-user	0m0.036s
-sys	0m0.006s
+real	0m0.186s
+user	0m0.037s
+sys	0m0.005s
 !! Client starting. Arguments: 
 !! 	host: 172.19.1.45
 !! 	port: 8888
@@ -45,11 +48,11 @@ sys	0m0.006s
 !! 	cipher: none
 !! 	key: None
 !! Receiving file...
-!! File confirmed, checksum: 8826cc0a3b9c99dc778fe6256d256737
+!! File confirmed, checksum: 0e943635887f1d44fd7ddc51cff90847
 
-real	0m0.098s
-user	0m0.032s
-sys	0m0.009s
+real	0m0.101s
+user	0m0.039s
+sys	0m0.004s
 !! Client starting. Arguments: 
 !! 	host: 172.19.1.45
 !! 	port: 8888
@@ -58,11 +61,11 @@ sys	0m0.009s
 !! 	cipher: aes128
 !! 	key: notsosecret123
 !! Receiving file...
-!! File confirmed, checksum: 8826cc0a3b9c99dc778fe6256d256737
+!! File confirmed, checksum: 0e943635887f1d44fd7ddc51cff90847
 
-real	0m0.140s
-user	0m0.036s
-sys	0m0.006s
+real	0m0.143s
+user	0m0.037s
+sys	0m0.008s
 !! Client starting. Arguments: 
 !! 	host: 172.19.1.45
 !! 	port: 8888
@@ -71,10 +74,10 @@ sys	0m0.006s
 !! 	cipher: aes256
 !! 	key: notsosecret123
 !! Receiving file...
-!! File confirmed, checksum: 8826cc0a3b9c99dc778fe6256d256737
+!! File confirmed, checksum: 0e943635887f1d44fd7ddc51cff90847
 
-real	0m0.139s
-user	0m0.035s
+real	0m0.140s
+user	0m0.036s
 sys	0m0.007s
 !! Client starting. Arguments: 
 !! 	host: 172.19.1.45
@@ -84,10 +87,11 @@ sys	0m0.007s
 !! 	cipher: none
 !! 	key: None
 !! Sending file...
+!! File sent, checksum: 4376d695d695db6abb653c1a8be86f61
 !! Finished writing 1MB.bin to server
 
-real	0m0.169s
-user	0m0.046s
+real	0m0.166s
+user	0m0.045s
 sys	0m0.010s
 !! Client starting. Arguments: 
 !! 	host: 172.19.1.45
@@ -97,11 +101,12 @@ sys	0m0.010s
 !! 	cipher: aes128
 !! 	key: notsosecret123
 !! Sending file...
+!! File sent, checksum: 4376d695d695db6abb653c1a8be86f61
 !! Finished writing 1MB.bin to server
 
-real	0m0.252s
-user	0m0.068s
-sys	0m0.023s
+real	0m0.244s
+user	0m0.066s
+sys	0m0.018s
 !! Client starting. Arguments: 
 !! 	host: 172.19.1.45
 !! 	port: 8888
@@ -110,50 +115,51 @@ sys	0m0.023s
 !! 	cipher: aes256
 !! 	key: notsosecret123
 !! Sending file...
+!! File sent, checksum: 4376d695d695db6abb653c1a8be86f61
 !! Finished writing 1MB.bin to server
 
-real	0m0.288s
-user	0m0.070s
-sys	0m0.017s
-!! Client starting. Arguments: 
-!! 	host: 172.19.1.45
-!! 	port: 8888
-!! 	command: read
-!! 	filename: 1MB.bin
-!! 	cipher: none
-!! 	key: None
-!! Receiving file...
-!! File confirmed, checksum: 6514de68ca864041341b1898ff71f3cf
-
-real	0m0.168s
-user	0m0.053s
-sys	0m0.012s
-!! Client starting. Arguments: 
-!! 	host: 172.19.1.45
-!! 	port: 8888
-!! 	command: read
-!! 	filename: 1MB.bin
-!! 	cipher: aes128
-!! 	key: notsosecret123
-!! Receiving file...
-!! File confirmed, checksum: 6514de68ca864041341b1898ff71f3cf
-
-real	0m0.236s
-user	0m0.082s
+real	0m0.281s
+user	0m0.075s
 sys	0m0.013s
 !! Client starting. Arguments: 
 !! 	host: 172.19.1.45
 !! 	port: 8888
 !! 	command: read
 !! 	filename: 1MB.bin
+!! 	cipher: none
+!! 	key: None
+!! Receiving file...
+!! File confirmed, checksum: 4376d695d695db6abb653c1a8be86f61
+
+real	0m0.168s
+user	0m0.056s
+sys	0m0.008s
+!! Client starting. Arguments: 
+!! 	host: 172.19.1.45
+!! 	port: 8888
+!! 	command: read
+!! 	filename: 1MB.bin
+!! 	cipher: aes128
+!! 	key: notsosecret123
+!! Receiving file...
+!! File confirmed, checksum: 4376d695d695db6abb653c1a8be86f61
+
+real	0m0.217s
+user	0m0.073s
+sys	0m0.017s
+!! Client starting. Arguments: 
+!! 	host: 172.19.1.45
+!! 	port: 8888
+!! 	command: read
+!! 	filename: 1MB.bin
 !! 	cipher: aes256
 !! 	key: notsosecret123
 !! Receiving file...
-!! File confirmed, checksum: 6514de68ca864041341b1898ff71f3cf
+!! File confirmed, checksum: 4376d695d695db6abb653c1a8be86f61
 
-real	0m0.229s
-user	0m0.077s
-sys	0m0.016s
+real	0m0.238s
+user	0m0.075s
+sys	0m0.015s
 !! Client starting. Arguments: 
 !! 	host: 172.19.1.45
 !! 	port: 8888
@@ -162,11 +168,12 @@ sys	0m0.016s
 !! 	cipher: none
 !! 	key: None
 !! Sending file...
+!! File sent, checksum: d3c86fbb73160fb73aa6061cfee11ef5
 !! Finished writing 1GB.bin to server
 
-real	0m13.991s
-user	0m10.271s
-sys	0m2.031s
+real	0m15.918s
+user	0m11.092s
+sys	0m2.271s
 !! Client starting. Arguments: 
 !! 	host: 172.19.1.45
 !! 	port: 8888
@@ -175,11 +182,12 @@ sys	0m2.031s
 !! 	cipher: aes128
 !! 	key: notsosecret123
 !! Sending file...
+!! File sent, checksum: d3c86fbb73160fb73aa6061cfee11ef5
 !! Finished writing 1GB.bin to server
 
-real	0m40.603s
-user	0m32.345s
-sys	0m3.207s
+real	0m40.503s
+user	0m31.788s
+sys	0m3.155s
 !! Client starting. Arguments: 
 !! 	host: 172.19.1.45
 !! 	port: 8888
@@ -188,11 +196,12 @@ sys	0m3.207s
 !! 	cipher: aes256
 !! 	key: notsosecret123
 !! Sending file...
+!! File sent, checksum: d3c86fbb73160fb73aa6061cfee11ef5
 !! Finished writing 1GB.bin to server
 
-real	0m45.375s
-user	0m33.410s
-sys	0m3.554s
+real	0m43.063s
+user	0m35.403s
+sys	0m2.858s
 !! Client starting. Arguments: 
 !! 	host: 172.19.1.45
 !! 	port: 8888
@@ -201,7 +210,11 @@ sys	0m3.554s
 !! 	cipher: none
 !! 	key: None
 !! Receiving file...
-!! File confirmed, checksum: 4bb548b4942b671edd8d388c23ba2f5f
+!! File confirmed, checksum: d3c86fbb73160fb73aa6061cfee11ef5
+
+real	0m40.148s
+user	0m18.519s
+sys	0m3.450s
 !! Client starting. Arguments: 
 !! 	host: 172.19.1.45
 !! 	port: 8888
@@ -210,7 +223,11 @@ sys	0m3.554s
 !! 	cipher: aes128
 !! 	key: notsosecret123
 !! Receiving file...
-!! File confirmed, checksum: 4bb548b4942b671edd8d388c23ba2f5f
+!! File confirmed, checksum: d3c86fbb73160fb73aa6061cfee11ef5
+
+real	1m9.836s
+user	0m44.786s
+sys	0m4.926s
 !! Client starting. Arguments: 
 !! 	host: 172.19.1.45
 !! 	port: 8888
@@ -219,4 +236,8 @@ sys	0m3.554s
 !! 	cipher: aes256
 !! 	key: notsosecret123
 !! Receiving file...
-!! File confirmed, checksum: 4bb548b4942b671edd8d388c23ba2f5f
+!! File confirmed, checksum: d3c86fbb73160fb73aa6061cfee11ef5
+
+real	1m15.398s
+user	0m48.220s
+sys	0m5.267s
