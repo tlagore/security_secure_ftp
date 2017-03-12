@@ -175,10 +175,8 @@ class FTPServer:
             else:
                 socket.set_cipher(message.cipher)
 
-                self._key = self.stretch_key_s(message.cipher, self._key)
-
                 #now set the key for our socket
-                socket.set_key(self._key)
+                socket.set_key(self.stretch_key_s(message.cipher, self._key))
 
                 print(self.time_message("Cipher: {0}".format(message.cipher)))
                 print(self.time_message("IV: {0}".format(message.payload)))
@@ -190,34 +188,15 @@ class FTPServer:
                     challenge = os.urandom(16)
                     socket.send_raw(challenge, encrypt=True)
                     response = socket.recv_raw(32, decrypt=True)
-
-                    '''
-                    challenge2 = (int.from_bytes(challenge, "big") + 1).to_bytes(32, "big")
-                    print(challenge2, "\n", response)
-                    good = True
-
-                    for idx, val in enumerate(challenge2):
-                        if response[idx] != challenge2[idx]:
-                            print(idx, ": ", response[idx],  "      ", challenge2[idx])
-                            good = False
-
-                    print(good)
-                    '''
-                    
-                    #print(challenge2 == response)
                     
                     if int.from_bytes(challenge, "big") + 1 != int.from_bytes(response, "big"):
                         print(self.time_message("Client supplied bad response to challenge. Ending communication."))
-                       # print("Expected: {0}\nReceived: {0}".format(int.from_bytes(challenge, "big") + 1, int.from_bytes(response, "big")))
-                        #print((challenge, response))
                         time.sleep(1)
                         socket.close()
                         socket = None
                     else:
                         print(self.time_message("Received good response. Initializing communication."))
                         self.ack_client(socket, True)
-                        #response_message = Message(mType=MessageType.confirmation, mPayload=True)
-                        #socket.send_message(response_message, encrypt=True)
                 else:
                     self.ack_client(socket, True)
                     
