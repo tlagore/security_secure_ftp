@@ -119,18 +119,12 @@ class FTPClient:
         md5_check = hashlib.md5()
         if response.payload == True:
             self.eprint("!! Sending file...")
-            size = os.stat(self._filename).st_size
-            total = 0
             intxt = sys.stdin.buffer.read(1024)
             while intxt != b'':
-                total+= len(intxt)
                 md5_check.update(intxt)
                 message = Message(mType=MessageType.write_file, mPayload=intxt)
                 self._socket.send_message(message, encrypt=True)
                 intxt = sys.stdin.buffer.read(1024)
-                print("\r!! {0}%".format(round((total/size) * 100, 2)), end='')
-
-            print()
 
             digest = ''.join('{:02x}'.format(x) for x in md5_check.digest())
             print("!! File sent, checksum: {0}".format(digest))
