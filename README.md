@@ -46,6 +46,10 @@ enter the 'client' folder that is in the project root folder.
 start the client using this command and argument scheme
 
       python3 __main__.py <read|write> <filename> <host>:<port> <none|aes128|aes256> [key]
+      
+Note that in write mode, you must pipe the file you wish to write to the server into the command. The `<filename>` specified is what the server will write the file as. Example:
+
+     cat myfile.txt | python3 __main__.py write renamed_file.txt host:port aes128 mykey
 
 where
       mode can be read or write
