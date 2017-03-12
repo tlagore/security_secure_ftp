@@ -51,4 +51,6 @@ openssl md5 1Maes256.bin
 echo ""
 
 
-echo "Demo suite finished."
+rm *.bin
+
+echo "Demo suite finished. Please remember to delete dummy files on server."

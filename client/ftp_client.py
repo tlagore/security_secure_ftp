@@ -106,7 +106,7 @@ class FTPClient:
             self.eprint("!! Server rejected read command")
 
         if response.type == MessageType.error:
-            self.eprint("!! {0}" + response.payload)
+            self.eprint("!! {0}".format(response.payload))
 
                           
     def write(self):

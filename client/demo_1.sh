@@ -15,16 +15,25 @@ openssl md5 1KB.bin
 openssl md5 1MB.bin
 openssl md5 256MB.bin
 
+echo "Files created. Press any key to test 256MB write no encryption ..."
+read -rsn1
+
 #256MB write
 echo "Uploading 256MB.bin md5:"
 openssl md5 256MB.bin
 cat 256MB.bin | python3 __main__.py write 256MB.bin $1:$2 none
 echo ""
 
+echo "Press any key to test 1MB write no encryption"
+read -rsn1
+
 echo "Uploading 1MB.bin md5:"
 openssl md5 1MB.bin
 cat 1MB.bin | python3 __main__.py write 256MB.bin $1:$2 none
 echo ""
+
+echo "Press any key to download 1MB no encryption & compare md5"
+read -rsn1
 
 echo "Downloading 1MB.bin md5:"
 openssl md5 1MB.bin
@@ -36,3 +45,6 @@ echo ""
 openssl md5 1MB.bin
 openssl md5 1MB_copy.bin
 echo ""
+
+
+echo "Demo suite 1 complete. Please run demo suite 2."
