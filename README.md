@@ -1,4 +1,4 @@
-### cpsc_526_assignment3
+### cpsc_526_assignment3 - netsec_secure_ftp
 
 # Authors:
 Tyrone Lagore T01 (10151950) James MacIsaac T03 (10063078)
@@ -56,7 +56,9 @@ where
       key to use for encryption (not used if no encryption is to happen)
 
 # Test Output:
+
 Test ran is a read of a picture file using aes256 encryption and secret key: notsosecret123
+
 ## Server side
 
 !! 19:06:18: --------------------------------------
@@ -94,21 +96,48 @@ Test ran is a read of a picture file using aes256 encryption and secret key: not
 # Communication protocol:
 
 Our communication protocol functions by controlling the overall interaction
-between the client and the server for assurance of encrypted communication:
+between the client and the server using a synchronous request-response message-based system
+for encrypted communication
 
-	connection establishment:
-	       - The server checks that the client has connected and spawns a thread to handle it
-	client authenticity (handshake process):
-	       - The client sends the server an unencrypted message to the server containing an
-	       	     initialization vector and a chosen cipher
-	       - The server does not trust the client yet - it generates a nonce, encrypts it
-	       	     using the client chosen cipher and IV along with its secret key. This is
-		     then sent to the client.
-	       - The client receives the encrypted nonce, decrypts it, adds 1 to the decrypted
-	       	     value, then re-encrypts it, and sends the re-encrypted value to the server
-		     for verification.
-	       - The server decrypts the client response, checks that it is the original nonce + 1,
-	       	     and then either continues communication (client responded well) or
-		     disconnects the socket (client was wrong, cannot prove that they are authentic)
-	communication
-		     
+## Connection establishment:
+The server checks that the client has connected and spawns a thread to handle it
+
+## Client authenticity (handshake process):
+The client sends the server an unencrypted message containing an
+initialization vector and a chosen cipher.
+
+The server does not trust the client yet - it generates a nonce, encrypts it
+using the client chosen cipher and IV along with the server-known secret key. This is
+then sent to the client.
+
+The client receives the encrypted nonce, decrypts it, adds 1 to the decrypted
+value, then re-encrypts it, and sends the re-encrypted value to the server
+for verification.
+
+The server decrypts the client response, checks that it is the original nonce + 1,
+and then either continues communication (client responded well) or
+disconnects the socket (client was wrong, cannot prove that they are authentic).
+
+## Encrypted communication:
+Once verified, the encrypted communication can start.
+
+The sender will get the contents of the file ready. These contents are split
+into fixed size 'message' objects. These message objects are serialized.
+The serialized data is then appended to a header object, simply indicating the length of
+the serialized message data.
+
+These header & serialized message objects are padded, and individually encrypted using the
+cipher, IV, and key.
+
+The encrypted messages are then sent over the communication channel in order.
+
+The receiver decrypts the messages, acquires the message length in the header object,
+reads the valid data from the serialized message object (knows when the data ends and
+the padding begins thanks to the header), then deserializes the message and interprets it.
+
+Once all data has been received in this manner, the data is now useable.
+
+
+# Timing tests:
+
+Please refer to the document in the project folder called ftp_secure_timing_results.pdf
