@@ -1,0 +1,222 @@
+!! Client starting. Arguments: 
+!! 	host: 172.19.1.45
+!! 	port: 8888
+!! 	command: write
+!! 	filename: 1KB.bin
+!! 	cipher: none
+!! 	key: None
+!! Sending file...
+!! Finished writing 1KB.bin to server
+
+real	0m0.191s
+user	0m0.036s
+sys	0m0.007s
+!! Client starting. Arguments: 
+!! 	host: 172.19.1.45
+!! 	port: 8888
+!! 	command: write
+!! 	filename: 1KB.bin
+!! 	cipher: aes128
+!! 	key: notsosecret123
+!! Sending file...
+!! Finished writing 1KB.bin to server
+
+real	0m0.188s
+user	0m0.037s
+sys	0m0.006s
+!! Client starting. Arguments: 
+!! 	host: 172.19.1.45
+!! 	port: 8888
+!! 	command: write
+!! 	filename: 1KB.bin
+!! 	cipher: aes256
+!! 	key: notsosecret123
+!! Sending file...
+!! Finished writing 1KB.bin to server
+
+real	0m0.187s
+user	0m0.036s
+sys	0m0.006s
+!! Client starting. Arguments: 
+!! 	host: 172.19.1.45
+!! 	port: 8888
+!! 	command: read
+!! 	filename: 1KB.bin
+!! 	cipher: none
+!! 	key: None
+!! Receiving file...
+!! File confirmed, checksum: 8826cc0a3b9c99dc778fe6256d256737
+
+real	0m0.098s
+user	0m0.032s
+sys	0m0.009s
+!! Client starting. Arguments: 
+!! 	host: 172.19.1.45
+!! 	port: 8888
+!! 	command: read
+!! 	filename: 1KB.bin
+!! 	cipher: aes128
+!! 	key: notsosecret123
+!! Receiving file...
+!! File confirmed, checksum: 8826cc0a3b9c99dc778fe6256d256737
+
+real	0m0.140s
+user	0m0.036s
+sys	0m0.006s
+!! Client starting. Arguments: 
+!! 	host: 172.19.1.45
+!! 	port: 8888
+!! 	command: read
+!! 	filename: 1KB.bin
+!! 	cipher: aes256
+!! 	key: notsosecret123
+!! Receiving file...
+!! File confirmed, checksum: 8826cc0a3b9c99dc778fe6256d256737
+
+real	0m0.139s
+user	0m0.035s
+sys	0m0.007s
+!! Client starting. Arguments: 
+!! 	host: 172.19.1.45
+!! 	port: 8888
+!! 	command: write
+!! 	filename: 1MB.bin
+!! 	cipher: none
+!! 	key: None
+!! Sending file...
+!! Finished writing 1MB.bin to server
+
+real	0m0.169s
+user	0m0.046s
+sys	0m0.010s
+!! Client starting. Arguments: 
+!! 	host: 172.19.1.45
+!! 	port: 8888
+!! 	command: write
+!! 	filename: 1MB.bin
+!! 	cipher: aes128
+!! 	key: notsosecret123
+!! Sending file...
+!! Finished writing 1MB.bin to server
+
+real	0m0.252s
+user	0m0.068s
+sys	0m0.023s
+!! Client starting. Arguments: 
+!! 	host: 172.19.1.45
+!! 	port: 8888
+!! 	command: write
+!! 	filename: 1MB.bin
+!! 	cipher: aes256
+!! 	key: notsosecret123
+!! Sending file...
+!! Finished writing 1MB.bin to server
+
+real	0m0.288s
+user	0m0.070s
+sys	0m0.017s
+!! Client starting. Arguments: 
+!! 	host: 172.19.1.45
+!! 	port: 8888
+!! 	command: read
+!! 	filename: 1MB.bin
+!! 	cipher: none
+!! 	key: None
+!! Receiving file...
+!! File confirmed, checksum: 6514de68ca864041341b1898ff71f3cf
+
+real	0m0.168s
+user	0m0.053s
+sys	0m0.012s
+!! Client starting. Arguments: 
+!! 	host: 172.19.1.45
+!! 	port: 8888
+!! 	command: read
+!! 	filename: 1MB.bin
+!! 	cipher: aes128
+!! 	key: notsosecret123
+!! Receiving file...
+!! File confirmed, checksum: 6514de68ca864041341b1898ff71f3cf
+
+real	0m0.236s
+user	0m0.082s
+sys	0m0.013s
+!! Client starting. Arguments: 
+!! 	host: 172.19.1.45
+!! 	port: 8888
+!! 	command: read
+!! 	filename: 1MB.bin
+!! 	cipher: aes256
+!! 	key: notsosecret123
+!! Receiving file...
+!! File confirmed, checksum: 6514de68ca864041341b1898ff71f3cf
+
+real	0m0.229s
+user	0m0.077s
+sys	0m0.016s
+!! Client starting. Arguments: 
+!! 	host: 172.19.1.45
+!! 	port: 8888
+!! 	command: write
+!! 	filename: 1GB.bin
+!! 	cipher: none
+!! 	key: None
+!! Sending file...
+!! Finished writing 1GB.bin to server
+
+real	0m13.991s
+user	0m10.271s
+sys	0m2.031s
+!! Client starting. Arguments: 
+!! 	host: 172.19.1.45
+!! 	port: 8888
+!! 	command: write
+!! 	filename: 1GB.bin
+!! 	cipher: aes128
+!! 	key: notsosecret123
+!! Sending file...
+!! Finished writing 1GB.bin to server
+
+real	0m40.603s
+user	0m32.345s
+sys	0m3.207s
+!! Client starting. Arguments: 
+!! 	host: 172.19.1.45
+!! 	port: 8888
+!! 	command: write
+!! 	filename: 1GB.bin
+!! 	cipher: aes256
+!! 	key: notsosecret123
+!! Sending file...
+!! Finished writing 1GB.bin to server
+
+real	0m45.375s
+user	0m33.410s
+sys	0m3.554s
+!! Client starting. Arguments: 
+!! 	host: 172.19.1.45
+!! 	port: 8888
+!! 	command: read
+!! 	filename: 1GB.bin
+!! 	cipher: none
+!! 	key: None
+!! Receiving file...
+!! File confirmed, checksum: 4bb548b4942b671edd8d388c23ba2f5f
+!! Client starting. Arguments: 
+!! 	host: 172.19.1.45
+!! 	port: 8888
+!! 	command: read
+!! 	filename: 1GB.bin
+!! 	cipher: aes128
+!! 	key: notsosecret123
+!! Receiving file...
+!! File confirmed, checksum: 4bb548b4942b671edd8d388c23ba2f5f
+!! Client starting. Arguments: 
+!! 	host: 172.19.1.45
+!! 	port: 8888
+!! 	command: read
+!! 	filename: 1GB.bin
+!! 	cipher: aes256
+!! 	key: notsosecret123
+!! Receiving file...
+!! File confirmed, checksum: 4bb548b4942b671edd8d388c23ba2f5f

@@ -127,7 +127,7 @@ class FTPClient:
                 intxt = sys.stdin.buffer.read(1024)
 
             digest = ''.join('{:02x}'.format(x) for x in md5_check.digest())
-            print("!! File sent, checksum: {0}".format(digest))
+            self.eprint("!! File sent, checksum: {0}".format(digest))
 
             message = Message(mType=MessageType.eof, mPayload=md5_check.digest())
             self._socket.send_message(message, encrypt=True)
