@@ -56,3 +56,59 @@ where
       key to use for encryption (not used if no encryption is to happen)
 
 # Test Output:
+Test ran is a read of a picture file using aes256 encryption and secret key: notsosecret123
+## Server side
+
+!! 19:06:18: --------------------------------------
+!! 19:06:18: Listening @ 172.19.1.45 on port 8888
+!! 19:06:18: Using secret key: notsosecret123
+!! 19:06:18: --------------------------------------
+
+!! 19:06:26: --------------------------------------
+!! 19:06:26: Client connected: 172.19.1.45
+!! 19:06:26: Cipher: aes256
+!! 19:06:26: IV: b'?\\\x13\xfa\xcd\xd2f\x81Yq2\xe7\n=^J'
+!! 19:06:26: Sending challenge...
+!! 19:06:26: Received good response. Initializing communication.
+!! 19:06:26: Client requesting filename: Blue_square_X.PNG
+!! 19:06:26: Processing...
+!! 19:06:26: 100.0%
+!! 19:06:26: File sent, checksum: 74feef5a31fc985247b8964c09e2433b
+!! 19:06:26: Finished sending file.
+!! 19:06:26: Done
+!! 19:06:26: --------------------------------------
+
+## Client side
+
+!! Client starting. Arguments: 
+!! 	host: 172.19.1.45
+!! 	port: 8888
+!! 	command: read
+!! 	filename: Blue_square_X.PNG
+!! 	cipher: aes256
+!! 	key: notsosecret123
+!! Receiving file...
+!! File confirmed, checksum: 74feef5a31fc985247b8964c09e2433b
+
+
+# Communication protocol:
+
+Our communication protocol functions by controlling the overall interaction
+between the client and the server for assurance of encrypted communication:
+
+	connection establishment:
+	       - The server checks that the client has connected and spawns a thread to handle it
+	client authenticity (handshake process):
+	       - The client sends the server an unencrypted message to the server containing an
+	       	     initialization vector and a chosen cipher
+	       - The server does not trust the client yet - it generates a nonce, encrypts it
+	       	     using the client chosen cipher and IV along with its secret key. This is
+		     then sent to the client.
+	       - The client receives the encrypted nonce, decrypts it, adds 1 to the decrypted
+	       	     value, then re-encrypts it, and sends the re-encrypted value to the server
+		     for verification.
+	       - The server decrypts the client response, checks that it is the original nonce + 1,
+	       	     and then either continues communication (client responded well) or
+		     disconnects the socket (client was wrong, cannot prove that they are authentic)
+	communication
+		     
