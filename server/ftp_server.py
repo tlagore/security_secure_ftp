@@ -186,14 +186,17 @@ class FTPServer:
         socket = SecureSocket(client, None, self._key, None)
         message = socket.recv_message(decrypt=False)
         try:
-            if message.cipher == "none":
+e            if message.cipher != "none" message.cipher != "aes128" message.cipher != "aes256":
+                print(self.time_message("Client supplied unsupported cipher"))
                 self.ack_client(socket, False)
                 socket = None
             else:
-                socket.set_cipher(message.cipher)
 
+                socket.set_cipher(message.cipher)
+                
                 #now set the key for our socket
-                socket.set_key(self.stretch_key_s(message.cipher, self._key))
+                if message.cipher != "none":
+                    socket.set_key(self.stretch_key_s(message.cipher, self._key))
 
                 print(self.time_message("Cipher: {0}".format(message.cipher)))
                 print(self.time_message("IV: {0}".format(message.payload)))
