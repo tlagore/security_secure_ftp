@@ -34,6 +34,7 @@ class FTPServer:
         print (self.time_message("Listening @ {0} on port {1}".format(ip, self._port)))
         print (self.time_message("Using secret key: {0}".format(self._key)))
         print(self.time_message("--------------------------------------"))
+        print("")
         if re.match("127.0.*", ip):
             print(self.time_message("If this number is 127.0.0.1 or similar, comment out"))
             print(self.time_message("{0}\t{1}".format(ip, socket.getfqdn())))
@@ -65,13 +66,13 @@ class FTPServer:
     def _worker(self, args):
         """Handle a client"""
         (client, address) = args
+        print(self.time_message("--------------------------------------"))
         print(self.time_message("Client connected: {0}".format(address[0])))
         
         try:
             socket = self.shakehand(client)
             
             if socket:
-                print(self.time_message("--------------------------------------"))
                 message = socket.recv_message(decrypt=True)
                 self.type_switch(message, socket)                                
         except (EOFError) as e:
@@ -80,7 +81,8 @@ class FTPServer:
             print(self.time_message("Client disconnected: {0}".format(address[0])))
             
         print(self.time_message("Done"))
-    
+        print(self.time_message("--------------------------------------"))
+        print("")
     def type_switch(self, msg, client):
         if msg.type == MessageType.write_file:
             self.client_write(client, msg.payload)
@@ -109,7 +111,7 @@ class FTPServer:
             print(self.time_message("Finished sending file."))
         except Exception as ex:
             self.send_error(client, "Error writing file: {0}".format(sys.exc_info()[1]))
-
+            
     def client_write(self, client, filename):
         """ handles a client attempting to write to server """
         print(self.time_message("Client requested to write filename: {0}".format(filename)))
@@ -184,7 +186,7 @@ class FTPServer:
                 socket.init_aescs()
 
                 if message.cipher != "none":
-                    print(self.time_message("Sending challenge."))
+                    print(self.time_message("Sending challenge..."))
                     challenge = os.urandom(16)
                     socket.send_raw(challenge, encrypt=True)
                     response = socket.recv_raw(32, decrypt=True)
