@@ -1,37 +1,35 @@
-### cpsc_526_assignment3 - netsec_secure_ftp
+### :lock: cpsc_526_assignment3 - netsec_secure_ftp :key:
 
-# Authors:
-Tyrone Lagore T01 (10151950) James MacIsaac T03 (10063078)
+# Authors
++ Tyrone Lagore T01 (10151950)
++ James MacIsaac T03 (10063078)
 
-# Desc:
+# Desc
 Network data transfer system that uses AES encrypted communications. Contains a client and a server application.
 
 # Running the program
 open the package containing the files.
 The client and server should be ran in separate folders, as they are organized in the distribution.
-We require you to have PyCrypto and python3 to be installed in order to run the program.
+We require you to have `PyCrypto` and `python3` to be installed in order to run the program.
 
-## Setting up the venv
+## Getting Started
 
-To set up an environment to install Pycrypto follow these steps:
-   1) install virtualenv using the command
-      	      	'pip3 install virtualenv'
-   2) create a virtualenv called 'venv' in the project root folder by using the command
-      	        'python3 -m venv venv'
-   3) activate the venv using
-      	        'source venv/bin/activate'
-   4) install PyCrypto using
-      	        pip3 install pycrypto
+```bash
+pip3 install virtualenv             # Get virtualenv
+python3 -m venv venv                # Create a new python3 virtuenv named venv
+source venv/bin/activate            # Activate your virtual environment.
+pip3 install -r requirements.txt    # Install dependencies.
+```
 
-You now have a vitualenv with pycrypto ready to run the program.
-
-## Running the server:
+## Running the server
 
 enter the 'server' folder that is in the project root folder.
 
 start the server using this command and argument scheme:
 
-      python3 __main__.py <port> [key]
+```bash
+python3 __main__.py <port> [key]
+```
 
 where
       port is the port to listen on
@@ -39,17 +37,21 @@ where
 
 The server will display it's public facing IP to allow for easy startup of the client.
 
-## Running the client:
+## Running the client
 
 enter the 'client' folder that is in the project root folder.
 
 start the client using this command and argument scheme
 
-      python3 __main__.py <read|write> <filename> <host>:<port> <none|aes128|aes256> [key]
-      
+```bash
+python3 __main__.py <read|write> <filename> <host>:<port> <none|aes128|aes256> [key]
+```
+
 Note that in write mode, you must pipe the file you wish to write to the server into the command. The `<filename>` specified is what the server will write the file as. Example:
 
-     cat myfile.txt | python3 __main__.py write renamed_file.txt host:port aes128 mykey
+```bash
+cat myfile.txt | python3 __main__.py write renamed_file.txt host:port aes128 mykey
+```
 
 where
       mode can be read or write
@@ -59,12 +61,13 @@ where
       encryption scheme for communications is off/aes128/aes256
       key to use for encryption (not used if no encryption is to happen)
 
-# Test Output:
+# Test Output
 
-Test ran is a read of a picture file using aes256 encryption and secret key: notsosecret123
+Test ran is a read of a picture file using `aes256` encryption and secret key: `notsosecret123`
 
-## Server side
+#### Server side
 
+```
 !! 19:06:18: --------------------------------------
 !! 19:06:18: Listening @ 172.19.1.45 on port 8888
 !! 19:06:18: Using secret key: notsosecret123
@@ -83,10 +86,12 @@ Test ran is a read of a picture file using aes256 encryption and secret key: not
 !! 19:06:26: Finished sending file.
 !! 19:06:26: Done
 !! 19:06:26: --------------------------------------
+```
 
-## Client side
+#### Client side
 
-!! Client starting. Arguments: 
+```
+!! Client starting. Arguments:
 !! 	host: 172.19.1.45
 !! 	port: 8888
 !! 	command: read
@@ -95,18 +100,20 @@ Test ran is a read of a picture file using aes256 encryption and secret key: not
 !! 	key: notsosecret123
 !! Receiving file...
 !! File confirmed, checksum: 74feef5a31fc985247b8964c09e2433b
+```
 
-
-# Communication protocol:
+# Communication protocol
 
 Our communication protocol functions by controlling the overall interaction
 between the client and the server using a synchronous request-response message-based system
 for encrypted communication
 
-## Connection establishment:
+## Connection establishment
+
 The server checks that the client has connected and spawns a thread to handle it
 
-## Client authenticity (handshake process):
+## Client authenticity (handshake process)
+
 The client sends the server an unencrypted message containing an
 initialization vector and a chosen cipher.
 
@@ -122,7 +129,8 @@ The server decrypts the client response, checks that it is the original nonce + 
 and then either continues communication (client responded well) or
 disconnects the socket (client was wrong, cannot prove that they are authentic).
 
-## Encrypted communication:
+## Encrypted communication
+
 Once verified, the encrypted communication can start.
 
 The sender will get the contents of the file ready. These contents are split
@@ -142,6 +150,6 @@ the padding begins thanks to the header), then deserializes the message and inte
 Once all data has been received in this manner, the data is now useable.
 
 
-# Timing tests:
+# Timing tests
 
 Please refer to the document in the project folder called ftp_secure_timing_results.pdf
